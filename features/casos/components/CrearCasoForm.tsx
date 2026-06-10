@@ -145,11 +145,11 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
 
       <div className="flex justify-end gap-2 pt-1">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}>
+          <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={isPending}>
             Cancelar
           </Button>
         )}
-        <Button type="submit" disabled={isPending || !bancoId || !clienteRut || !clienteNombre || !fechaDj}>
+        <Button type="submit" size="sm" disabled={isPending || !bancoId || !clienteRut || !clienteNombre || !fechaDj}>
           {isPending ? "Creando…" : "Crear caso"}
         </Button>
       </div>

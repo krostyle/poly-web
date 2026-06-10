@@ -53,113 +53,275 @@ Next.js 16.2 · React 19 · TypeScript · Tailwind CSS v4 · shadcn/ui · Clerk 
 
 ## UI / Design System
 
-### Tokens de color — cuándo usar cada uno
+### Filosofía
 
-| Token | Hex | Usar para |
-| --- | --- | --- |
-| `--navy-900` | `#0F1E3D` | Títulos (`font-display`), texto principal de datos, íconos activos. Es el `--primary` de shadcn. |
-| `--navy-700` | `#1E3A66` | Hover de navy-900, sidebar activo, focus ring. |
-| `--amber-500` | `#C8881C` | **Solo** para N° OT, acento puntual de un dato clave. Nunca en botones ni fondos amplios. |
-| `--ink-600` | `#475067` | Labels de formulario, texto secundario, encabezados de columna. |
-| `--slate-100` | `#F1F4F8` | Background de la app (`<main>`), hover de filas de tabla, header de tabla. |
-| `--paper` | `#FFFFFF` | Cards, diálogos, inputs. |
-| Semáforo (`--verde/--amarillo/--rojo/--vencido`) | — | **Solo** en componentes de plazos. En ningún otro lugar. |
+Poly es software B2B profesional para abogados. El diseño debe sentirse como **Linear, Vercel dashboard o Stripe** — no como un CRUD genérico de Bootstrap ni un template de shadcn sin customizar. Tres principios no negociables:
 
-**Nunca usar**: `bg-blue-*`, `bg-green-*`, `bg-purple-*`, `text-blue-*`, etc. Esos colores no existen en la paleta de Poly.
+1. **Minimalismo funcional** — cada elemento que existe tiene una razón. Nada decorativo.
+2. **Jerarquía tipográfica clara** — el dato más importante domina visualmente; el resto recede.
+3. **Blanco como elemento de diseño** — el espacio vacío no es desperdicio, es respiración.
+
+Antes de hacer commit de cualquier componente UI, preguntate: **¿Esto parece Linear o parece un formulario de WordPress?**
+
+---
+
+### Paleta — reglas de uso
+
+| Token | Hex | Usar para | Nunca para |
+| --- | --- | --- | --- |
+| `--navy-900` | `#0F1E3D` | Títulos, texto de dato clave, sidebar, `<Button>` primario | Fondos amplios, bordes |
+| `--navy-700` | `#1E3A66` | Hover de navy-900, sidebar activo, focus ring | Texto |
+| `--amber-500` | `#C8881C` | N° OT (único acento de dato), highlights puntuales | Botones, fondos, textos de párrafo |
+| `--ink-600` | `#475067` | Labels, texto secundario, headers de columna, descripciones | Títulos principales |
+| `--slate-100` | `#F1F4F8` | Background `<main>`, hover de filas, header de tabla | Cards, diálogos |
+| `--paper` | `#FFFFFF` | Cards, diálogos, panel de detalle | Backgrounds de página |
+| `--verde/--amarillo/--rojo/--vencido` | — | **Exclusivo** para semáforo de plazos | Cualquier otro uso |
+
+**Colores prohibidos** (no existen en Poly): `bg-blue-*`, `bg-green-*`, `bg-red-*`, `bg-purple-*`, `text-red-*`, `border-red-*` y cualquier color genérico de Tailwind. Usar `text-destructive` solo para mensajes de error de formulario inline, nunca para estados de carga fallida.
 
 ---
 
 ### Botones
 
-| Acción | Variante | Ejemplo |
+| Intención | Componente | Cuándo |
 | --- | --- | --- |
-| Acción primaria (crear, guardar, confirmar) | `<Button>` | "Nuevo caso", "Guardar" |
-| Acción secundaria (cancelar, volver) | `<Button variant="outline">` | "Cancelar" |
-| Acción destructiva (eliminar, archivar) | `<Button variant="destructive">` | "Eliminar caso" |
-| Acción fantasma / navegación inline | `className="text-sm text-(--ink-600) hover:text-(--navy-900) transition-colors"` | "← Volver" |
+| Acción primaria (crear, guardar, confirmar) | `<Button size="sm">` | Siempre el botón más prominente de la vista |
+| Acción secundaria | `<Button variant="outline" size="sm">` | Cancelar, cerrar, acción alternativa |
+| Acción destructiva | `<Button variant="destructive" size="sm">` | Eliminar, archivar permanentemente |
+| Navegación o link inline | `className="text-sm text-(--ink-600) hover:text-(--navy-900) transition-colors"` | "← Volver", links en texto |
 
-`<Button>` usa `--primary` (= navy-900) automáticamente. **Nunca sobreescribir** con `bg-primary`, `bg-navy-900`, `className="bg-blue-600"` ni similar.
+`<Button>` usa `--primary` (= navy-900) automáticamente. Nunca escribir `bg-navy-900`, `bg-primary`, ni colores hardcodeados en botones.
 
 ---
 
-### Patrones de UX — cuándo usar Dialog vs página
+### Cuándo usar Dialog vs página
 
-| Caso | Patrón | Ruta |
-| --- | --- | --- |
-| Crear entidad sencilla (≤ 6 campos) | `<Dialog>` disparado desde botón en la lista | sin URL propia |
-| Editar entidad sencilla | `<Dialog>` disparado desde la fila/botón | sin URL propia |
-| Ver detalle de entidad | Página dedicada | `/entidad/[id]` |
-| Confirmar acción destructiva | `<AlertDialog>` | sin URL propia |
-| Formulario largo (> 6 campos, múltiples secciones) | Página dedicada | `/entidad/nueva` |
-
-**Regla general**: si la acción se resuelve en un formulario corto, va en Dialog. Si requiere navegación y tiene URL propia, va en página.
+| Acción | Patrón |
+| --- | --- |
+| Crear entidad (≤ 6 campos) | `<Dialog>` — sin URL propia |
+| Editar entidad (≤ 6 campos) | `<Dialog>` — sin URL propia |
+| Confirmar/destruir | `<AlertDialog>` — sin URL propia |
+| Ver detalle completo | Página `/entidad/[id]` |
+| Wizard o formulario complejo (> 6 campos, múltiples secciones) | Página `/entidad/nueva` |
 
 ---
 
-### Layout de páginas
+### Layout de página — plantilla obligatoria
 
 ```tsx
-// Encabezado estándar de sección
-<div className="flex items-center justify-between">
-  <h1 className="font-display text-2xl font-semibold text-(--navy-900)">Título</h1>
-  <PrimaryActionDialog />   {/* o <Button> si no es Dialog */}
-</div>
-
-// Contenido principal
-<div className="space-y-6">...</div>
+export default function MiPage() {
+  return (
+    <div className="space-y-6">
+      {/* Encabezado: título a la izq, acción principal a la der */}
+      <div className="flex items-center justify-between">
+        <div>
+          <h1 className="font-display text-2xl font-semibold text-(--navy-900)">Título</h1>
+          {/* subtítulo opcional */}
+          <p className="mt-0.5 text-sm text-(--ink-600)">Descripción breve</p>
+        </div>
+        <AccionPrincipalDialog />
+      </div>
+      {/* Contenido */}
+      <MiTablaOCard />
+    </div>
+  );
+}
 ```
 
 ---
 
-### Cards
-
-- Siempre `rounded-xl border-border shadow-none` — sin sombra por defecto
-- Header de card: `CardTitle` con `text-sm font-semibold uppercase tracking-wide text-(--ink-600)`
-- Nunca usar `CardDescription` — el texto de apoyo va como `text-sm text-(--ink-600)` dentro del contenido
-
----
-
-### Tablas
-
-- Envolver en `<div className="rounded-xl border-border bg-(--paper) overflow-hidden">`
-- Header de columna: `text-xs font-semibold uppercase tracking-wide text-(--ink-600)`
-- Header row: `className="bg-(--slate-100) hover:bg-(--slate-100)"` (para que el hover no cambie el header)
-- Filas de datos: `hover:bg-(--slate-100) transition-colors`
-- Skeleton de carga: filas de skeleton dentro del mismo contenedor
-
----
-
-### Formularios dentro de Dialog
+### Tablas — plantilla obligatoria
 
 ```tsx
-// Label estándar
-<label htmlFor="campo" className="block text-sm font-medium text-(--ink-600)">
-  Etiqueta
-</label>
+{/* Wrapper siempre igual */}
+<div className="rounded-xl border-border bg-(--paper) overflow-hidden">
+  <Table>
+    <TableHeader>
+      <TableRow className="bg-(--slate-100) hover:bg-(--slate-100)">
+        <TableHead className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+          Columna
+        </TableHead>
+      </TableRow>
+    </TableHeader>
+    <TableBody>
+      {rows.map(row => (
+        <TableRow key={row.id} className="hover:bg-(--slate-100) transition-colors">
+          <TableCell className="text-sm">...</TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</div>
+```
 
-// Botones al pie — siempre justify-end con gap-2
-<div className="flex justify-end gap-2 pt-1">
-  <Button type="button" variant="outline" onClick={onCancel}>Cancelar</Button>
-  <Button type="submit">Guardar</Button>
+**Siempre** incluir los tres estados: carga (skeleton), vacío (icono + texto), error (texto muted + reintentar).
+
+---
+
+### Estado vacío — plantilla obligatoria
+
+Importar icono de `lucide-react`. El ícono varía por entidad.
+
+```tsx
+import { FolderOpen } from "lucide-react"; // o FileText, Users, Calendar, etc.
+
+function EmptyState({ action }: { action?: React.ReactNode }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-16 text-center">
+      <div className="rounded-xl bg-(--slate-100) p-3.5">
+        <FolderOpen className="size-6 text-(--ink-600)" strokeWidth={1.5} />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-(--navy-900)">Sin registros</p>
+        <p className="mt-0.5 text-xs text-(--ink-600)">
+          Los registros aparecerán aquí cuando los crees.
+        </p>
+      </div>
+      {action}
+    </div>
+  );
+}
+```
+
+---
+
+### Estado de error — plantilla obligatoria
+
+**Nunca** usar texto rojo (`text-destructive`, `text-red-*`) para errores de carga. Solo para errores de validación de campo.
+
+```tsx
+import { AlertCircle } from "lucide-react";
+
+function ErrorState({ onRetry }: { onRetry?: () => void }) {
+  return (
+    <div className="flex flex-col items-center gap-3 py-16 text-center">
+      <div className="rounded-xl bg-(--slate-100) p-3.5">
+        <AlertCircle className="size-6 text-(--ink-600)" strokeWidth={1.5} />
+      </div>
+      <div>
+        <p className="text-sm font-medium text-(--navy-900)">No se pudieron cargar los datos</p>
+        <p className="mt-0.5 text-xs text-(--ink-600)">
+          Verificá tu conexión e intentá nuevamente.
+        </p>
+      </div>
+      {onRetry && (
+        <button
+          onClick={onRetry}
+          className="text-xs text-(--navy-700) underline underline-offset-2 hover:text-(--navy-900) transition-colors"
+        >
+          Reintentar
+        </button>
+      )}
+    </div>
+  );
+}
+```
+
+---
+
+### Estado de carga (skeleton) — reglas
+
+- El skeleton debe imitar la **forma exacta** del contenido que cargará
+- En tablas: filas de skeleton del mismo alto que las filas de datos
+- En cards de detalle: bloques que coinciden con los campos reales
+- En ningún caso mostrar un spinner genérico sin contexto
+
+```tsx
+// Skeleton de tabla (6 filas)
+<div className="divide-y divide-border">
+  {Array.from({ length: 6 }).map((_, i) => (
+    <div key={i} className="flex items-center gap-4 px-4 py-3">
+      <Skeleton className="h-5 w-16 rounded-full" />   {/* badge estado */}
+      <Skeleton className="h-4 w-40" />                {/* nombre */}
+      <Skeleton className="h-4 w-24" />                {/* rut */}
+      <Skeleton className="h-4 w-20 ml-auto" />        {/* fecha */}
+    </div>
+  ))}
 </div>
 ```
 
 ---
 
-### Listas de campos en detalle (`<Field>`)
+### Cards de detalle
 
-Para mostrar pares label/valor en una card de detalle, usar este patrón:
+```tsx
+<Card className="rounded-xl border-border shadow-none">
+  <CardHeader className="pb-0">
+    <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+      Sección
+    </CardTitle>
+  </CardHeader>
+  <CardContent className="pt-3">
+    <dl>
+      <Field label="Etiqueta" value="Valor" />
+    </dl>
+  </CardContent>
+</Card>
+```
+
+Patrón `<Field>` para pares label/valor:
 
 ```tsx
 function Field({ label, value }: { label: string; value: React.ReactNode }) {
   return (
     <div className="flex items-baseline justify-between py-2.5 border-b border-border last:border-0">
       <dt className="text-sm text-(--ink-600)">{label}</dt>
-      <dd className="text-sm font-medium text-(--navy-900) text-right">{value}</dd>
+      <dd className="text-sm font-medium text-(--navy-900) text-right max-w-[60%]">{value}</dd>
     </div>
   );
 }
 ```
+
+---
+
+### Formularios en Dialog
+
+```tsx
+// Label: muted, pequeño
+<label htmlFor="campo" className="block text-sm font-medium text-(--ink-600)">
+  Etiqueta <span className="font-normal text-muted-foreground text-xs">(opcional)</span>
+</label>
+
+// Error de campo: inline, pequeño, destructive
+{fieldError && <p className="text-xs text-destructive mt-1">{fieldError}</p>}
+
+// Footer siempre a la derecha
+<div className="flex justify-end gap-2 pt-2">
+  <Button type="button" variant="outline" size="sm" onClick={onCancel}>Cancelar</Button>
+  <Button type="submit" size="sm" disabled={isPending || !isValid}>
+    {isPending ? "Guardando…" : "Guardar"}
+  </Button>
+</div>
+```
+
+---
+
+### Anti-patrones — NUNCA hacer esto
+
+- ❌ `text-red-600` o `text-destructive` para errores de carga (usa texto `text-(--ink-600)` + ícono)
+- ❌ `className="bg-blue-500"` o cualquier color Tailwind genérico
+- ❌ Sombras en cards (`shadow-sm`, `shadow-md`) — siempre `shadow-none`
+- ❌ Página dedicada para un formulario de ≤ 6 campos — usar Dialog
+- ❌ Estado vacío sin ícono — siempre icono + heading + subtext
+- ❌ Mostrar JSON o IDs crudos al usuario
+- ❌ Spinner genérico (`<div className="animate-spin">`) — usar skeletons
+- ❌ Texto en mayúsculas para títulos de sección de página (solo para headers de columna y labels de card)
+- ❌ `CardDescription` de shadcn — usar `text-sm text-(--ink-600)` dentro del contenido
+- ❌ Más de 2 niveles de anidación de cards (card dentro de card dentro de card)
+- ❌ `onClick={() => window.location.reload()}` para reintentar — usar `refetch()` de TanStack Query
+
+---
+
+### Checklist antes de hacer commit de UI
+
+- [ ] Estado vacío: ¿tiene ícono Lucide + heading + subtext?
+- [ ] Estado de error: ¿no usa texto rojo? ¿tiene botón "Reintentar" que llama a `refetch()`?
+- [ ] Estado de carga: ¿el skeleton imita la forma del contenido?
+- [ ] Números y fechas: ¿tienen `tabular-nums`?
+- [ ] Botones: ¿usan variante correcta? ¿no tienen colores hardcodeados?
+- [ ] Acciones cortas: ¿van en Dialog, no en página?
+- [ ] Colores: ¿solo tokens del design system? ¿cero colores genéricos de Tailwind?
+- [ ] ¿Pasaría por Linear o Stripe sin verse fuera de lugar?
 
 ## Comandos
 
