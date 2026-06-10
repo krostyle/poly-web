@@ -1,8 +1,16 @@
 # SPEC-01 Auth UI — Tasks
 
-## Estado: 🔲 Pendiente (requiere poly-api SPEC-01)
+## Estado: 🔄 En progreso
 
 ## Tareas
+
+### Pantalla de autenticación con branding
+
+- [x] `app/(auth)/layout.tsx` — split-screen: panel navy-900 + panel paper
+- [x] Panel izquierdo: wordmark Poly (Fraunces), semáforo decorativo, tagline Ley 20.009
+- [x] Panel derecho: componente Clerk centrado
+- [x] Responsive: panel de marca oculto en mobile (< lg)
+- [x] Simplificar `sign-in/page.tsx` y `sign-up/page.tsx`
 
 ### Bootstrap
 - [ ] `lib/api/auth.ts` — función `bootstrap()` → `POST /v1/bootstrap`
