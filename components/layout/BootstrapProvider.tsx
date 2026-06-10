@@ -14,21 +14,27 @@ export function BootstrapProvider({ children }: { children: React.ReactNode }) {
 
   useEffect(() => {
     if (done.current || !organization || !user) return;
-    done.current = true;
 
-    getToken().then((token) => {
-      if (!token) return;
+    // Force a fresh token so it includes the active org claims (org_id, org_role).
+    // A cached token may predate the org activation and lack these claims.
+    getToken({ skipCache: true }).then((token) => {
+      if (!token) {
+        console.warn("[bootstrap] no token");
+        return;
+      }
+      done.current = true;
       bootstrap(token, {
         org_name: organization.name,
         user_name: user.fullName ?? user.firstName ?? "Usuario",
         user_email: user.primaryEmailAddress?.emailAddress ?? "",
       })
         .then(() => {
-          // Invalidate me cache so sidebar and pages pick up the fresh role from DB
           qc.invalidateQueries({ queryKey: ["me"] });
         })
-        .catch(() => {
-          // Non-blocking
+        .catch((err) => {
+          console.error("[bootstrap] failed:", err);
+          // Reset so the next render can retry
+          done.current = false;
         });
     });
   }, [organization, user, getToken, qc]);
