@@ -3,16 +3,25 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useOrganization } from "@clerk/nextjs";
+import { useMe } from "@/features/auth/hooks/useMe";
 
-const navItems = [
+const mainNav = [
   { href: "/dashboard", label: "Dashboard" },
   { href: "/casos", label: "Casos" },
   { href: "/plazos", label: "Plazos" },
 ];
 
+const adminNav = [
+  { href: "/configuracion/bancos", label: "Configuración" },
+];
+
 export function Sidebar() {
   const pathname = usePathname();
   const { organization } = useOrganization();
+  const { data: me } = useMe();
+  const isAdmin = me?.usuario.rol === "ADMIN";
+
+  const navItems = isAdmin ? [...mainNav, ...adminNav] : mainNav;
 
   return (
     <aside className="flex w-60 shrink-0 flex-col bg-(--navy-900) text-white min-h-screen">

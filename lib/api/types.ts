@@ -94,3 +94,24 @@ export interface CrearCasoPayload {
   clienteContacto?: string;
   fechaDj: string;
 }
+
+export type Rol = "ADMIN" | "ABOGADO" | "TRAMITADOR";
+
+export interface Banco {
+  id: string;
+  nombre: string;
+  createdAt: string;
+}
+
+export interface UsuarioBanco {
+  id: string;
+  nombre: string;
+  email: string;
+  rol: Rol;
+}
+
+export interface MeResponse {
+  estudio: { id: string; nombre: string };
+  usuario: { id: string; nombre: string; email: string; rol: Rol };
+  bancos: Array<{ id: string; nombre: string }>;
+}
