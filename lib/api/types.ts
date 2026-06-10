@@ -58,3 +58,39 @@ export interface Operacion {
   montoUF?: number;
   fechaOp: string;
 }
+
+export interface CasoListItem {
+  id: string;
+  bancoId: string;
+  bancoNombre: string;
+  clienteId: string;
+  clienteRut: string;
+  clienteNombre: string;
+  abogadoId?: string;
+  numeroOt?: string;
+  estado: Estado;
+  fechaDj: string;
+  denunciaValida: boolean;
+  createdAt: string;
+}
+
+export interface Cliente {
+  id: string;
+  rut: string;
+  nombre: string;
+  contacto?: string;
+}
+
+export interface CasoDetalle {
+  caso: Caso;
+  cliente: Cliente;
+  operaciones: Operacion[];
+}
+
+export interface CrearCasoPayload {
+  bancoId: string;
+  clienteRut: string;
+  clienteNombre: string;
+  clienteContacto?: string;
+  fechaDj: string;
+}
