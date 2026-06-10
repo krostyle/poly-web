@@ -12,7 +12,7 @@ export default async function AppLayout({
   const { userId, orgId, orgSlug } = await auth();
 
   if (!userId) redirect("/sign-in");
-  if (!orgId) redirect("/sign-in"); // Clerk will intercept and show org selector
+  if (!orgId) redirect("/sin-acceso");
 
   return (
     <BootstrapProvider>
