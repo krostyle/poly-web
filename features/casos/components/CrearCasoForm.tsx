@@ -1,6 +1,5 @@
 "use client";
 import { useState, type FormEvent } from "react";
-import { useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
@@ -13,8 +12,12 @@ import {
 import { useCrearCaso } from "@/features/casos/hooks/useCrearCaso";
 import { useBancos } from "@/features/casos/hooks/useBancos";
 
-export function CrearCasoForm() {
-  const router = useRouter();
+interface CrearCasoFormProps {
+  onSuccess?: (casoId: string) => void;
+  onCancel?: () => void;
+}
+
+export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
   const { mutate, isPending, error } = useCrearCaso();
   const { data: bancos, isLoading: loadingBancos } = useBancos();
 
@@ -36,28 +39,22 @@ export function CrearCasoForm() {
       },
       {
         onSuccess: (data) => {
-          router.push(`/casos/${data.caso.id}`);
+          onSuccess?.(data.caso.id);
         },
       }
     );
   }
 
   return (
-    <form onSubmit={handleSubmit} className="space-y-5 max-w-lg">
+    <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
-        <label
-          htmlFor="banco"
-          className="block text-sm font-medium text-(--navy-900)"
-        >
+        <label htmlFor="banco" className="block text-sm font-medium text-(--ink-600)">
           Banco
         </label>
         {loadingBancos ? (
-          <Input disabled placeholder="Cargando bancos..." />
+          <Input disabled placeholder="Cargando bancos…" />
         ) : bancos && bancos.length > 0 ? (
-          <Select
-            value={bancoId || null}
-            onValueChange={(val) => setBancoId(val ?? "")}
-          >
+          <Select value={bancoId || undefined} onValueChange={(val) => setBancoId(val ?? "")}>
             <SelectTrigger id="banco" className="w-full">
               <SelectValue placeholder="Seleccionar banco" />
             </SelectTrigger>
@@ -80,28 +77,37 @@ export function CrearCasoForm() {
         )}
       </div>
 
-      <div className="space-y-1.5">
-        <label
-          htmlFor="rut"
-          className="block text-sm font-medium text-(--navy-900)"
-        >
-          RUT del cliente
-        </label>
-        <Input
-          id="rut"
-          placeholder="12.345.678-9"
-          value={clienteRut}
-          onChange={(e) => setClienteRut(e.target.value)}
-          required
-          className="tabular-nums"
-        />
+      <div className="grid grid-cols-2 gap-3">
+        <div className="space-y-1.5">
+          <label htmlFor="rut" className="block text-sm font-medium text-(--ink-600)">
+            RUT
+          </label>
+          <Input
+            id="rut"
+            placeholder="12.345.678-9"
+            value={clienteRut}
+            onChange={(e) => setClienteRut(e.target.value)}
+            required
+            className="tabular-nums"
+          />
+        </div>
+        <div className="space-y-1.5">
+          <label htmlFor="fecha-dj" className="block text-sm font-medium text-(--ink-600)">
+            Fecha DJ
+          </label>
+          <Input
+            id="fecha-dj"
+            type="date"
+            value={fechaDj}
+            onChange={(e) => setFechaDj(e.target.value)}
+            required
+            className="tabular-nums"
+          />
+        </div>
       </div>
 
       <div className="space-y-1.5">
-        <label
-          htmlFor="nombre"
-          className="block text-sm font-medium text-(--navy-900)"
-        >
+        <label htmlFor="nombre" className="block text-sm font-medium text-(--ink-600)">
           Nombre del cliente
         </label>
         <Input
@@ -114,55 +120,32 @@ export function CrearCasoForm() {
       </div>
 
       <div className="space-y-1.5">
-        <label
-          htmlFor="contacto"
-          className="block text-sm font-medium text-(--navy-900)"
-        >
+        <label htmlFor="contacto" className="block text-sm font-medium text-(--ink-600)">
           Contacto{" "}
-          <span className="text-muted-foreground font-normal">(opcional)</span>
+          <span className="text-muted-foreground font-normal text-xs">(opcional)</span>
         </label>
         <Input
           id="contacto"
-          placeholder="email@example.com"
+          placeholder="email o teléfono"
           value={clienteContacto}
           onChange={(e) => setClienteContacto(e.target.value)}
         />
       </div>
 
-      <div className="space-y-1.5">
-        <label
-          htmlFor="fecha-dj"
-          className="block text-sm font-medium text-(--navy-900)"
-        >
-          Fecha DJ
-        </label>
-        <Input
-          id="fecha-dj"
-          type="date"
-          value={fechaDj}
-          onChange={(e) => setFechaDj(e.target.value)}
-          required
-          className="tabular-nums"
-        />
-      </div>
-
       {error && (
-        <p className="text-sm text-red-600">
+        <p className="text-sm text-destructive">
           {error instanceof Error ? error.message : "Error al crear el caso."}
         </p>
       )}
 
-      <div className="flex gap-3 pt-2">
-        <Button type="submit" disabled={isPending}>
-          {isPending ? "Creando..." : "Crear caso"}
-        </Button>
-        <Button
-          type="button"
-          variant="outline"
-          onClick={() => router.back()}
-          disabled={isPending}
-        >
-          Cancelar
+      <div className="flex justify-end gap-2 pt-1">
+        {onCancel && (
+          <Button type="button" variant="outline" onClick={onCancel} disabled={isPending}>
+            Cancelar
+          </Button>
+        )}
+        <Button type="submit" disabled={isPending || !bancoId || !clienteRut || !clienteNombre || !fechaDj}>
+          {isPending ? "Creando…" : "Crear caso"}
         </Button>
       </div>
     </form>
