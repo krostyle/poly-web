@@ -18,10 +18,12 @@ const adminNav = [
 export function Sidebar() {
   const pathname = usePathname();
   const { organization } = useOrganization();
-  const { data: me } = useMe();
-  const isAdmin = me?.usuario.rol === "ADMIN";
+  const { data: me, isLoading: loadingMe } = useMe();
+  // Show admin nav while loading (unknown role) or when confirmed ADMIN.
+  // The page itself guards access if the user isn't admin.
+  const showAdmin = loadingMe || me?.usuario.rol === "ADMIN";
 
-  const navItems = isAdmin ? [...mainNav, ...adminNav] : mainNav;
+  const navItems = showAdmin ? [...mainNav, ...adminNav] : mainNav;
 
   return (
     <aside className="flex w-60 shrink-0 flex-col bg-(--navy-900) text-white min-h-screen">

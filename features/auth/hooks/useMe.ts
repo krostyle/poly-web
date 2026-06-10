@@ -10,7 +10,9 @@ export function useMe() {
     queryKey: ["me"],
     queryFn: async () => {
       const token = await getToken();
-      return apiClient.request<MeResponse>("/v1/me", { token: token ?? "" });
+      const data = await apiClient.request<MeResponse>("/v1/me", { token: token ?? "" });
+      console.log("[useMe]", data);
+      return data;
     },
   });
 }
