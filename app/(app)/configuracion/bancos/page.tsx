@@ -1,16 +1,24 @@
 "use client";
 
-import { redirect } from "next/navigation";
+import { useEffect } from "react";
+import { useRouter } from "next/navigation";
 import { BancosTable } from "@/features/bancos/components/BancosTable";
 import { NuevoBancoDialog } from "@/features/bancos/components/NuevoBancoDialog";
 import { useMe } from "@/features/auth/hooks/useMe";
 
 export default function BancosPage() {
   const { data: me, isLoading } = useMe();
+  const router = useRouter();
 
-  if (!isLoading && me?.usuario.rol !== "ADMIN") {
-    redirect("/dashboard");
-  }
+  useEffect(() => {
+    if (!isLoading && me && me.usuario.rol !== "ADMIN") {
+      router.replace("/dashboard");
+    }
+  }, [isLoading, me, router]);
+
+  // Still loading or waiting for bootstrap to update role — don't redirect yet
+  if (isLoading || !me) return null;
+  if (me.usuario.rol !== "ADMIN") return null;
 
   return (
     <div className="space-y-6">

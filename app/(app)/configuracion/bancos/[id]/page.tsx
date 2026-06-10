@@ -1,8 +1,7 @@
 "use client";
 
-import { use } from "react";
+import { use, useEffect } from "react";
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -30,9 +29,11 @@ export default function BancoDetallePage({ params }: { params: Promise<{ id: str
   const { mutate: eliminar, isPending: eliminando } = useEliminarBanco();
   const [deleteError, setDeleteError] = useState<string | null>(null);
 
-  if (!loadingMe && me?.usuario.rol !== "ADMIN") {
-    redirect("/dashboard");
-  }
+  useEffect(() => {
+    if (!loadingMe && me && me.usuario.rol !== "ADMIN") {
+      router.replace("/dashboard");
+    }
+  }, [loadingMe, me, router]);
 
   const banco = bancos?.find((b) => b.id === id);
   const isLoading = loadingMe || loadingBancos;
