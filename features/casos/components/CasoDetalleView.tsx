@@ -74,9 +74,15 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
   if (isError || !data) {
     return (
-      <p className="text-sm text-destructive">
-        Error al cargar el caso. Intente nuevamente.
-      </p>
+      <div className="rounded-xl border-border bg-(--paper) px-6 py-12 text-center">
+        <p className="text-sm text-(--ink-600)">No se pudo cargar el caso.</p>
+        <button
+          onClick={() => window.location.reload()}
+          className="mt-2 text-xs text-(--navy-700) underline underline-offset-2 hover:text-(--navy-900) transition-colors"
+        >
+          Reintentar
+        </button>
+      </div>
     );
   }
 

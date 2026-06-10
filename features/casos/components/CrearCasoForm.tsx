@@ -19,7 +19,7 @@ interface CrearCasoFormProps {
 
 export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
   const { mutate, isPending, error } = useCrearCaso();
-  const { data: bancos, isLoading: loadingBancos } = useBancos();
+  const { data: bancos, isLoading: loadingBancos, isError: bancosError } = useBancos();
 
   const [bancoId, setBancoId] = useState("");
   const [clienteRut, setClienteRut] = useState("");
@@ -66,14 +66,19 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
               ))}
             </SelectContent>
           </Select>
-        ) : (
+        ) : bancosError ? (
           <Input
             id="banco"
             placeholder="ID del banco"
             value={bancoId}
             onChange={(e) => setBancoId(e.target.value)}
-            required
           />
+        ) : (
+          <div className="rounded-lg border-border bg-(--slate-100) px-3 py-2">
+            <p className="text-xs text-(--ink-600)">
+              No hay bancos asignados a tu usuario. Contactá al administrador.
+            </p>
+          </div>
         )}
       </div>
 
