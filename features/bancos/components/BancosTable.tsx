@@ -71,6 +71,7 @@ export function BancosTable() {
           </div>
         </div>
       ) : (
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-(--slate-100) hover:bg-(--slate-100)">
@@ -106,6 +107,7 @@ export function BancosTable() {
             ))}
           </TableBody>
         </Table>
+        </div>
       )}
     </div>
   );

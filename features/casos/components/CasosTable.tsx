@@ -79,6 +79,7 @@ export function CasosTable() {
           </div>
         </div>
       ) : (
+        <div className="overflow-x-auto">
         <Table>
           <TableHeader>
             <TableRow className="bg-(--slate-100) hover:bg-(--slate-100)">
@@ -141,6 +142,7 @@ export function CasosTable() {
             ))}
           </TableBody>
         </Table>
+        </div>
       )}
     </div>
   );

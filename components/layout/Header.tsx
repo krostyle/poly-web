@@ -1,8 +1,21 @@
 import { UserButton } from "@clerk/nextjs";
+import { Menu } from "lucide-react";
 
-export function Header() {
+interface HeaderProps {
+  onMenuClick?: () => void;
+}
+
+export function Header({ onMenuClick }: HeaderProps) {
   return (
-    <header className="flex items-center justify-end gap-4 border-b border-gray-200 bg-(--paper) px-6 py-3">
+    <header className="flex items-center gap-4 border-b border-border bg-(--paper) px-4 py-3 md:px-6">
+      <button
+        className="p-1 text-(--ink-600) hover:text-(--navy-900) transition-colors md:hidden"
+        onClick={onMenuClick}
+        aria-label="Abrir menú"
+      >
+        <Menu className="size-5" />
+      </button>
+      <div className="flex-1" />
       <UserButton />
     </header>
   );

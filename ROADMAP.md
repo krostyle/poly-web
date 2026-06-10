@@ -2,9 +2,11 @@
 
 ## Estado actual
 
-**Fase completada: 0 — Scaffolding**
+### Fase activa: 3 — Máquina de estados
 
-## Fases
+---
+
+## Fases completadas
 
 ### Fase 0 — Scaffolding ✅
 
@@ -14,22 +16,24 @@
 - [x] Migraciones SQL, sqlc config, Makefile
 - [x] Tests de dominio (estado, plazos): 8 passing
 
-### Fase 1 — Auth + Multi-tenancy 🔲
+### Fase 1 — Auth + Multi-tenancy ✅
 
-**Objetivo:** Un abogado puede hacer login y ver solo los casos de su estudio/banco.
+- [x] poly-api: middleware Clerk JWT + guard tenant scope
+- [x] poly-api: endpoints de bootstrapping (estudio, banco, usuario)
+- [x] poly-web: flujo sign-in → dashboard con datos reales de Clerk
+- [x] Sync de rol Clerk → DB en cada bootstrap (upsert incluye `rol`)
 
-- [ ] poly-api: middleware Clerk JWT + guard tenant scope
-- [ ] poly-api: endpoints de bootstrapping (estudio, banco, usuario)
-- [ ] poly-web: flujo sign-in → dashboard con datos reales de Clerk
-- **Spec:** `poly-api/specs/01-auth/` · `poly-web/specs/01-auth-ui/`
+### Fase 2 — CRUD de casos, operaciones y clientes ✅
 
-### Fase 2 — CRUD de casos, operaciones y clientes 🔲
+- [x] poly-api: CRUD completo con validaciones de dominio
+- [x] poly-web: formulario de creación + listado de casos
+- [x] poly-web: detalle de caso con operaciones
+- [x] poly-web: gestión de bancos y asignaciones usuario↔banco (SPEC-08)
+- [x] poly-web: diseño responsivo (sidebar drawer en móvil, tablas scrollables)
 
-**Objetivo:** Crear casos, registrar operaciones impugnadas y datos del cliente.
+---
 
-- [ ] poly-api: CRUD completo con validaciones de dominio
-- [ ] poly-web: formulario de creación + listado de casos
-- **Spec:** `poly-api/specs/02-casos/` · `poly-web/specs/02-casos-ui/`
+## Fases pendientes
 
 ### Fase 3 — Máquina de estados 🔲
 

@@ -95,14 +95,14 @@ export default function BancoDetallePage({ params }: { params: Promise<{ id: str
       </Link>
 
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-semibold text-(--navy-900)">{banco!.nombre}</h1>
           <p className="mt-0.5 text-sm tabular-nums text-(--ink-600)">
             Creado el {formatDate(banco!.createdAt)}
           </p>
         </div>
-        <div className="flex items-center gap-2 shrink-0 pt-1">
+        <div className="flex items-center gap-2 shrink-0">
           <EditarBancoDialog banco={banco!} />
           <Button
             variant="destructive"

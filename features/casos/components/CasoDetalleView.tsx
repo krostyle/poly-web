@@ -106,14 +106,14 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex items-start justify-between gap-4">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-semibold text-(--navy-900)">
             {cliente.nombre}
           </h1>
           <p className="mt-0.5 text-sm tabular-nums text-(--ink-600)">{cliente.rut}</p>
         </div>
-        <div className="flex items-center gap-2.5 pt-1 shrink-0">
+        <div className="flex items-center gap-2.5 shrink-0">
           {caso.numeroOt && (
             <span className="font-display text-sm font-semibold text-(--amber-500) tabular-nums">
               {caso.numeroOt}
@@ -200,6 +200,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
               Sin operaciones registradas.
             </p>
           ) : (
+            <div className="overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow className="hover:bg-transparent">
@@ -245,6 +246,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
                 ))}
               </TableBody>
             </Table>
+            </div>
           )}
         </CardContent>
       </Card>

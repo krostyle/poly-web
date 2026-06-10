@@ -108,12 +108,14 @@ Antes de hacer commit de cualquier componente UI, preguntate: **¿Esto parece Li
 
 ### Layout de página — plantilla obligatoria
 
+El encabezado usa `flex-wrap` para que el botón de acción caiga a la siguiente línea en móvil.
+
 ```tsx
 export default function MiPage() {
   return (
     <div className="space-y-6">
-      {/* Encabezado: título a la izq, acción principal a la der */}
-      <div className="flex items-center justify-between">
+      {/* Encabezado: título a la izq, acción principal a la der; wrap en móvil */}
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <h1 className="font-display text-2xl font-semibold text-(--navy-900)">Título</h1>
           {/* subtítulo opcional */}
@@ -132,25 +134,29 @@ export default function MiPage() {
 
 ### Tablas — plantilla obligatoria
 
+El `<Table>` va dentro de un `overflow-x-auto` para que sea scrolleable en móvil.
+
 ```tsx
 {/* Wrapper siempre igual */}
 <div className="rounded-xl border-border bg-(--paper) overflow-hidden">
-  <Table>
-    <TableHeader>
-      <TableRow className="bg-(--slate-100) hover:bg-(--slate-100)">
-        <TableHead className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
-          Columna
-        </TableHead>
-      </TableRow>
-    </TableHeader>
-    <TableBody>
-      {rows.map(row => (
-        <TableRow key={row.id} className="hover:bg-(--slate-100) transition-colors">
-          <TableCell className="text-sm">...</TableCell>
+  <div className="overflow-x-auto">
+    <Table>
+      <TableHeader>
+        <TableRow className="bg-(--slate-100) hover:bg-(--slate-100)">
+          <TableHead className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+            Columna
+          </TableHead>
         </TableRow>
-      ))}
-    </TableBody>
-  </Table>
+      </TableHeader>
+      <TableBody>
+        {rows.map(row => (
+          <TableRow key={row.id} className="hover:bg-(--slate-100) transition-colors">
+            <TableCell className="text-sm">...</TableCell>
+          </TableRow>
+        ))}
+      </TableBody>
+    </Table>
+  </div>
 </div>
 ```
 
@@ -296,6 +302,35 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 
 ---
 
+### Responsive — reglas obligatorias
+
+Poly se usa desde celular. Cada componente debe funcionar en `320px` mínimo.
+
+**Layout shell:**
+
+- El sidebar es un drawer deslizable en móvil (`fixed`, slide-in desde la izquierda)
+- En `md:` y arriba, el sidebar es `relative` (dentro del flex) y siempre visible
+- El toggle del hamburger está en el `Header`, visible solo en `md:hidden`
+- La estructura del shell es: `AppShell` (cliente) envuelve `Sidebar` + `Header` + `<main p-4 md:p-6>`
+
+**Reglas por componente:**
+
+| Elemento | Móvil | Desktop |
+| --- | --- | --- |
+| Encabezado de página | `flex flex-wrap gap-3` → botón cae abajo | `flex justify-between` |
+| Tablas | `overflow-x-auto` envuelve `<Table>` | sin scroll |
+| Cards de detalle | `grid-cols-1` | `grid-cols-2` via `md:grid-cols-2` |
+| Diálogos | shadcn ya es responsive en mobile | igual |
+| Padding de `<main>` | `p-4` | `md:p-6` |
+
+**Anti-patrones responsivos:**
+
+- ❌ `flex justify-between` sin `flex-wrap` en encabezados — se desborda
+- ❌ `<Table>` sin `overflow-x-auto` — rompe el layout en móvil
+- ❌ `w-60 shrink-0` fijo en sidebar — lo remueve del flujo en móvil
+
+---
+
 ### Anti-patrones — NUNCA hacer esto
 
 - ❌ `text-red-600` o `text-destructive` para errores de carga (usa texto `text-(--ink-600)` + ícono)
@@ -321,6 +356,9 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 - [ ] Botones: ¿usan variante correcta? ¿no tienen colores hardcodeados?
 - [ ] Acciones cortas: ¿van en Dialog, no en página?
 - [ ] Colores: ¿solo tokens del design system? ¿cero colores genéricos de Tailwind?
+- [ ] Tablas: ¿tienen `overflow-x-auto`?
+- [ ] Encabezados de página: ¿usan `flex-wrap`?
+- [ ] ¿Funciona en 375px (iPhone SE)?
 - [ ] ¿Pasaría por Linear o Stripe sin verse fuera de lugar?
 
 ## Comandos
