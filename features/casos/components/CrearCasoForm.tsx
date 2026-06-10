@@ -9,6 +9,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { AlertCircle } from "lucide-react";
 import { useCrearCaso } from "@/features/casos/hooks/useCrearCaso";
 import { useBancos } from "@/features/casos/hooks/useBancos";
 
@@ -19,7 +20,7 @@ interface CrearCasoFormProps {
 
 export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
   const { mutate, isPending, error } = useCrearCaso();
-  const { data: bancos, isLoading: loadingBancos, isError: bancosError } = useBancos();
+  const { data: bancos, isLoading: loadingBancos, isError: bancosError, refetch: refetchBancos } = useBancos();
 
   const [bancoId, setBancoId] = useState("");
   const [clienteRut, setClienteRut] = useState("");
@@ -53,6 +54,20 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
         </label>
         {loadingBancos ? (
           <Input disabled placeholder="Cargando bancos…" />
+        ) : bancosError ? (
+          <div className="flex items-center gap-2.5 rounded-lg border border-border bg-(--slate-100) px-3 py-2.5">
+            <AlertCircle className="size-4 shrink-0 text-(--ink-600)" strokeWidth={1.5} />
+            <div className="flex-1 min-w-0">
+              <p className="text-xs text-(--ink-600)">No se pudieron cargar los bancos.</p>
+            </div>
+            <button
+              type="button"
+              onClick={() => refetchBancos()}
+              className="text-xs text-(--navy-700) underline underline-offset-2 hover:text-(--navy-900) transition-colors shrink-0"
+            >
+              Reintentar
+            </button>
+          </div>
         ) : bancos && bancos.length > 0 ? (
           <Select value={bancoId || undefined} onValueChange={(val) => setBancoId(val ?? "")}>
             <SelectTrigger id="banco" className="w-full">
@@ -66,17 +81,10 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
               ))}
             </SelectContent>
           </Select>
-        ) : bancosError ? (
-          <Input
-            id="banco"
-            placeholder="ID del banco"
-            value={bancoId}
-            onChange={(e) => setBancoId(e.target.value)}
-          />
         ) : (
-          <div className="rounded-lg border-border bg-(--slate-100) px-3 py-2">
+          <div className="rounded-lg border border-border bg-(--slate-100) px-3 py-2.5">
             <p className="text-xs text-(--ink-600)">
-              No hay bancos asignados a tu usuario. Contactá al administrador.
+              No hay bancos asignados. Pedile al administrador que te asigne uno en Configuración.
             </p>
           </div>
         )}
