@@ -97,9 +97,9 @@ export interface CrearCasoPayload {
 
 export interface HistorialEntry {
   id: string;
+  accion: string;
+  detalle: Record<string, unknown>;
   usuarioNombre: string;
-  estadoAnterior: Estado;
-  estadoNuevo: Estado;
   createdAt: string;
 }
 

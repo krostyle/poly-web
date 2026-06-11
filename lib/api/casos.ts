@@ -64,9 +64,9 @@ interface RawListarCasosResponse {
 
 interface RawHistorialEntry {
   id: string;
+  accion: string;
+  detalle: Record<string, unknown>;
   usuario_nombre: string;
-  estado_anterior: Estado;
-  estado_nuevo: Estado;
   created_at: string;
 }
 
@@ -195,9 +195,9 @@ export async function getHistorial(casoId: string, token: string): Promise<Histo
   const raw = await apiClient.request<RawHistorialResponse>(`/v1/casos/${casoId}/historial`, { token });
   return (raw.historial ?? []).map((e) => ({
     id: e.id,
+    accion: e.accion,
+    detalle: e.detalle ?? {},
     usuarioNombre: e.usuario_nombre,
-    estadoAnterior: e.estado_anterior,
-    estadoNuevo: e.estado_nuevo,
     createdAt: e.created_at,
   }));
 }

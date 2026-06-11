@@ -17,6 +17,7 @@ import { PlazosCard } from "@/features/plazos/components/PlazosCard";
 import { DocumentosCard } from "@/features/documentos/components/DocumentosCard";
 import { useCaso } from "@/features/casos/hooks/useCaso";
 import { useHistorialCaso } from "@/features/casos/hooks/useHistorialCaso";
+import type { HistorialEntry, Estado } from "@/lib/api/types";
 
 interface CasoDetalleViewProps {
   id: string;
@@ -85,6 +86,62 @@ function formatDateTime(iso: string): string {
     hour: "2-digit",
     minute: "2-digit",
   });
+}
+
+function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const d = entry.detalle as Record<string, any>;
+
+  switch (entry.accion) {
+    case "CASO_CREADO":
+      return (
+        <span className="text-(--navy-900)">
+          Caso creado{" "}
+          {d.estado && (
+            <>
+              en estado <EstadoBadge estado={d.estado as Estado} />
+            </>
+          )}
+        </span>
+      );
+
+    case "ESTADO_CAMBIADO":
+      return (
+        <span className="flex items-center gap-1.5 flex-wrap">
+          <EstadoBadge estado={d.anterior as Estado} />
+          <ArrowRight className="size-3.5 shrink-0 text-(--ink-600)" />
+          <EstadoBadge estado={d.nuevo as Estado} />
+        </span>
+      );
+
+    case "ABOGADO_ASIGNADO":
+      return (
+        <span className="text-(--navy-900)">
+          Abogado asignado
+          {d.numero_ot && (
+            <span className="ml-1.5 font-semibold text-(--amber-500)">{String(d.numero_ot)}</span>
+          )}
+        </span>
+      );
+
+    case "CASO_ACTUALIZADO":
+      return <span className="text-(--navy-900)">Caso actualizado</span>;
+
+    case "OPERACION_AGREGADA":
+      return (
+        <span className="text-(--navy-900)">
+          Operación agregada
+          {d.monto_clp != null && (
+            <span className="ml-1.5 tabular-nums text-(--ink-600)">
+              · ${Number(d.monto_clp).toLocaleString("es-CL")}
+            </span>
+          )}
+        </span>
+      );
+
+    default:
+      return <span className="text-(--navy-900)">{entry.accion}</span>;
+  }
 }
 
 export function CasoDetalleView({ id }: CasoDetalleViewProps) {
@@ -271,27 +328,25 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
         </CardContent>
       </Card>
 
-      {/* Historial de estados */}
+      {/* Auditoría */}
       {historial && historial.length > 0 && (
         <Card className="rounded-xl border-border shadow-none">
           <CardHeader className="pb-0">
             <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
-              Historial de estados
+              Auditoría
             </CardTitle>
           </CardHeader>
           <CardContent className="pt-3">
             <ol className="space-y-3">
               {historial.map((entry) => (
-                <li key={entry.id} className="flex items-center gap-3 text-sm flex-wrap">
-                  <span className="shrink-0 text-(--ink-600) tabular-nums text-xs">
+                <li key={entry.id} className="flex items-start gap-3 text-sm flex-wrap">
+                  <span className="shrink-0 text-(--ink-600) tabular-nums text-xs pt-0.5">
                     {formatDateTime(entry.createdAt)}
                   </span>
-                  <span className="flex items-center gap-1.5">
-                    <EstadoBadge estado={entry.estadoAnterior} />
-                    <ArrowRight className="size-3.5 shrink-0 text-(--ink-600)" />
-                    <EstadoBadge estado={entry.estadoNuevo} />
+                  <span className="flex-1 min-w-0">
+                    <AuditEntryDescription entry={entry} />
                   </span>
-                  <span className="ml-auto text-xs text-(--ink-600) shrink-0">
+                  <span className="text-xs text-(--ink-600) shrink-0">
                     {entry.usuarioNombre}
                   </span>
                 </li>
