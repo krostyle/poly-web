@@ -1,16 +1,16 @@
 "use client";
 import { useQuery } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
-import { listarCasos } from "@/lib/api/casos";
+import { listarCasos, type CasoFilters } from "@/lib/api/casos";
 import type { CasoListItem } from "@/lib/api/types";
 
-export function useCasos() {
+export function useCasos(filters?: CasoFilters) {
   const { getToken } = useAuth();
   return useQuery<{ casos: CasoListItem[]; total: number }>({
-    queryKey: ["casos"],
+    queryKey: ["casos", filters],
     queryFn: async () => {
       const token = await getToken();
-      return listarCasos(token ?? "");
+      return listarCasos(token ?? "", filters);
     },
   });
 }

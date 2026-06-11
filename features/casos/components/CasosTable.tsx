@@ -14,6 +14,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EstadoBadge } from "./EstadoBadge";
 import { useCasos } from "@/features/casos/hooks/useCasos";
 import { useMe } from "@/features/auth/hooks/useMe";
+import type { CasoFilters } from "@/lib/api/casos";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("es-CL", {
@@ -38,8 +39,8 @@ function TableSkeleton() {
   );
 }
 
-export function CasosTable() {
-  const { data, isLoading, isError, refetch } = useCasos();
+export function CasosTable({ filters }: { filters?: CasoFilters }) {
+  const { data, isLoading, isError, refetch } = useCasos(filters);
   const { data: me } = useMe();
 
   const casos = data?.casos ?? [];
@@ -92,10 +93,16 @@ export function CasosTable() {
             </div>
           ) : (
             <div>
-              <p className="text-sm font-medium text-(--navy-900)">Sin casos registrados</p>
-              <p className="mt-0.5 text-xs text-(--ink-600)">
-                Los casos aparecerán aquí una vez que los crees.
+              <p className="text-sm font-medium text-(--navy-900)">
+                {filters && (filters.q || filters.bancoId || filters.estado || filters.soloMios)
+                  ? "Sin resultados para los filtros aplicados"
+                  : "Sin casos registrados"}
               </p>
+              {!(filters?.q || filters?.bancoId || filters?.estado || filters?.soloMios) && (
+                <p className="mt-0.5 text-xs text-(--ink-600)">
+                  Los casos aparecerán aquí una vez que los crees.
+                </p>
+              )}
             </div>
           )}
         </div>

@@ -126,8 +126,28 @@ function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
   };
 }
 
-export async function listarCasos(token: string): Promise<{ casos: CasoListItem[]; total: number }> {
-  const raw = await apiClient.request<RawListarCasosResponse>("/v1/casos", { token });
+export interface CasoFilters {
+  q?: string;
+  bancoId?: string;
+  estado?: Estado;
+  soloMios?: boolean;
+}
+
+export async function listarCasos(
+  token: string,
+  filters?: CasoFilters
+): Promise<{ casos: CasoListItem[]; total: number }> {
+  const params = new URLSearchParams();
+  if (filters?.q) params.set("q", filters.q);
+  if (filters?.bancoId) params.set("banco_id", filters.bancoId);
+  if (filters?.estado) params.set("estado", filters.estado);
+  if (filters?.soloMios) params.set("abogado_id", "me");
+
+  const qs = params.toString();
+  const raw = await apiClient.request<RawListarCasosResponse>(
+    qs ? `/v1/casos?${qs}` : "/v1/casos",
+    { token }
+  );
   return {
     casos: (raw.casos ?? []).map(mapCasoListItem),
     total: raw.total ?? 0,
