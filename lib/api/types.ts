@@ -103,6 +103,25 @@ export interface HistorialEntry {
   createdAt: string;
 }
 
+export type TipoDocumento =
+  | "CARTOLA"
+  | "EVIDENCIA"
+  | "DJ"
+  | "DENUNCIA"
+  | "CARTA_BANCO"
+  | "DEMANDA"
+  | "RESOLUCION"
+  | "OTRO";
+
+export interface Documento {
+  id: string;
+  tipo: TipoDocumento;
+  nombre: string;
+  blobUrl: string;
+  subidoPor?: string;
+  createdAt: string;
+}
+
 export type Rol = "ADMIN" | "ABOGADO" | "TRAMITADOR";
 
 export interface Banco {

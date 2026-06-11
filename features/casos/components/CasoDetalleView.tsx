@@ -14,6 +14,7 @@ import {
 import { EstadoBadge } from "./EstadoBadge";
 import { TransicionarEstadoDialog } from "./TransicionarEstadoDialog";
 import { PlazosCard } from "@/features/plazos/components/PlazosCard";
+import { DocumentosCard } from "@/features/documentos/components/DocumentosCard";
 import { useCaso } from "@/features/casos/hooks/useCaso";
 import { useHistorialCaso } from "@/features/casos/hooks/useHistorialCaso";
 
@@ -302,6 +303,9 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
       {/* Plazos */}
       <PlazosCard casoId={id} />
+
+      {/* Documentos */}
+      <DocumentosCard casoId={id} />
     </div>
   );
 }
