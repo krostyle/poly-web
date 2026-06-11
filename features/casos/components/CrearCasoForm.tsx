@@ -84,7 +84,7 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
         ) : (
           <div className="rounded-lg border border-border bg-(--slate-100) px-3 py-2.5">
             <p className="text-xs text-(--ink-600)">
-              No hay bancos asignados. Pedile al administrador que te asigne uno en Configuración.
+              No hay bancos asignados. Pídele al administrador que te asigne uno en Configuración.
             </p>
           </div>
         )}
