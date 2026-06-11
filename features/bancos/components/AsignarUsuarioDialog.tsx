@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -117,6 +118,7 @@ export function AsignarUsuarioDialog({ bancoId, asignados }: AsignarUsuarioDialo
               size="sm"
               disabled={isPending || !usuarioId || disponibles.length === 0}
             >
+              {isPending && <Loader2 className="size-3.5 animate-spin" />}
               {isPending ? "Asignando…" : "Asignar"}
             </Button>
           </div>

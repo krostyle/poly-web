@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, type FormEvent } from "react";
+import { Loader2 } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -79,6 +80,7 @@ export function EditarBancoDialog({ banco }: EditarBancoDialogProps) {
               size="sm"
               disabled={isPending || !nombre.trim() || nombre === banco.nombre}
             >
+              {isPending && <Loader2 className="size-3.5 animate-spin" />}
               {isPending ? "Guardando…" : "Guardar"}
             </Button>
           </div>

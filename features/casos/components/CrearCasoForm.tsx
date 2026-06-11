@@ -1,5 +1,6 @@
 "use client";
 import { useState, type FormEvent } from "react";
+import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { DatePicker } from "@/components/ui/date-picker";
@@ -170,6 +171,7 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
           size="sm"
           disabled={isPending || !bancoId || !clienteRutDisplay || !clienteNombre}
         >
+          {isPending && <Loader2 className="size-3.5 animate-spin" />}
           {isPending ? "Creando…" : "Crear caso"}
         </Button>
       </div>

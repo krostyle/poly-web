@@ -10,7 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { AlertCircle, FileText, Upload, ExternalLink } from "lucide-react";
+import { AlertCircle, FileText, Loader2, Upload, ExternalLink } from "lucide-react";
 import { useDocumentosCaso, useSubirDocumento } from "@/features/documentos/hooks/useDocumentosCaso";
 import type { TipoDocumento } from "@/lib/api/types";
 
@@ -88,6 +88,7 @@ export function DocumentosCard({ casoId }: DocumentosCardProps) {
             onClick={() => inputRef.current?.click()}
           >
             <Upload className="size-3.5" />
+            {subiendo && <Loader2 className="size-3.5 animate-spin" />}
             {subiendo ? "Subiendo…" : "Subir"}
           </Button>
           <input

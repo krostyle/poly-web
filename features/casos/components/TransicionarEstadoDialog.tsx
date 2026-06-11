@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, RotateCcw } from "lucide-react";
+import { AlertTriangle, Loader2, RotateCcw } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -267,6 +267,7 @@ export function TransicionarEstadoDialog({ casoId, estadoActual }: Props) {
                   (selectedEstado === "TERMINADO" && !motivoTermino)
                 }
               >
+                {isPending && <Loader2 className="size-3.5 animate-spin" />}
                 {isPending ? "Guardando…" : "Confirmar"}
               </Button>
             </div>

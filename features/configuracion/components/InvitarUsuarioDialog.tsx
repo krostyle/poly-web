@@ -16,7 +16,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { UserPlus } from "lucide-react";
+import { Loader2, UserPlus } from "lucide-react";
 import { useInvitarUsuario } from "@/features/configuracion/hooks/useUsuarios";
 import type { Rol } from "@/lib/api/types";
 
@@ -142,6 +142,7 @@ export function InvitarUsuarioDialog() {
                 Cancelar
               </Button>
               <Button type="submit" size="sm" disabled={isPending}>
+                {isPending && <Loader2 className="size-3.5 animate-spin" />}
                 {isPending ? "Enviando…" : "Enviar invitación"}
               </Button>
             </div>

@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, Loader2 } from "lucide-react";
 import { useCrearBanco } from "@/features/bancos/hooks/useCrearBanco";
 import { useCatalogoBancos } from "@/features/bancos/hooks/useCatalogoBancos";
 
@@ -107,6 +107,7 @@ export function NuevoBancoDialog() {
               Cancelar
             </Button>
             <Button type="submit" size="sm" disabled={isPending || !nombre}>
+              {isPending && <Loader2 className="size-3.5 animate-spin" />}
               {isPending ? "Creando…" : "Crear banco"}
             </Button>
           </div>

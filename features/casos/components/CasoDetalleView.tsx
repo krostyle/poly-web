@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { AlertCircle, ArrowRight, Trash2 } from "lucide-react";
+import { AlertCircle, ArrowRight, Loader2, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
@@ -196,6 +196,7 @@ function UnsavedChangesBar({
           Descartar
         </Button>
         <Button size="sm" onClick={onSave} disabled={isSaving}>
+          {isSaving && <Loader2 className="size-3.5 animate-spin" />}
           {isSaving ? "Guardando…" : "Guardar cambios"}
         </Button>
       </div>
@@ -458,6 +459,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
               onClick={() => eliminar.mutate()}
               disabled={eliminar.isPending}
             >
+              {eliminar.isPending && <Loader2 className="size-3.5 animate-spin" />}
               {eliminar.isPending ? "Eliminando…" : "Sí, eliminar"}
             </Button>
           </DialogFooter>
