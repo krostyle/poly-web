@@ -415,7 +415,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
   const { caso, cliente, operaciones } = data;
   const totalCLP = operaciones.reduce((sum, op) => sum + op.montoCLP, 0);
   const isAdmin = me?.usuario.rol === "ADMIN";
-  const canDelete = isAdmin && caso.estado === "INGRESO";
+  const canDelete = isAdmin;
 
   return (
     <div className="space-y-6 pb-20">
