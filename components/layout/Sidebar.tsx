@@ -4,7 +4,7 @@ import Link from "next/link";
 import { X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
-import { useOrganization } from "@clerk/nextjs";
+import { useAuth, useOrganization } from "@clerk/nextjs";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -28,23 +28,31 @@ interface SidebarProps {
 
 export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
+  const { userId } = useAuth();
   const { organization } = useOrganization();
   const { data: me, isLoading: loadingMe } = useMe();
 
   // Seed from localStorage so returning admins see the nav instantly on reload.
-  const [cachedAdmin] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    return localStorage.getItem(ADMIN_CACHE_KEY) === "1";
-  });
+  // The key is scoped per Clerk userId so one user's cache never leaks to another
+  // (e.g. a member logging in after an admin used the same browser).
+  const [cachedAdmin, setCachedAdmin] = useState(false);
+  useEffect(() => {
+    localStorage.removeItem(ADMIN_CACHE_KEY); // drop legacy unscoped key
+    if (!userId) return;
+    setCachedAdmin(localStorage.getItem(`${ADMIN_CACHE_KEY}:${userId}`) === "1");
+  }, [userId]);
 
   // Keep localStorage in sync when me resolves.
   useEffect(() => {
-    if (!loadingMe && me) {
-      localStorage.setItem(ADMIN_CACHE_KEY, me.usuario.rol === "ADMIN" ? "1" : "0");
+    if (!loadingMe && me && userId) {
+      localStorage.setItem(
+        `${ADMIN_CACHE_KEY}:${userId}`,
+        me.usuario.rol === "ADMIN" ? "1" : "0",
+      );
     }
-  }, [loadingMe, me]);
+  }, [loadingMe, me, userId]);
 
-  // While loading: trust the cache (avoids flash for returning admins).
+  // While loading: trust this user's cache (avoids flash for returning admins).
   // Once resolved: trust the server (prevents flash for non-admins).
   const showAdmin = loadingMe ? cachedAdmin : me?.usuario.rol === "ADMIN";
 
