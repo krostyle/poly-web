@@ -36,10 +36,11 @@ import { DocumentosCard } from "@/features/documentos/components/DocumentosCard"
 import { useCaso } from "@/features/casos/hooks/useCaso";
 import { useHistorialCaso } from "@/features/casos/hooks/useHistorialCaso";
 import { useActualizarCaso } from "@/features/casos/hooks/useActualizarCaso";
+import { useActualizarCliente } from "@/features/casos/hooks/useActualizarCliente";
 import { useEliminarCaso } from "@/features/casos/hooks/useEliminarCaso";
 import { useUsuariosBanco } from "@/features/bancos/hooks/useUsuariosBanco";
 import { useMe } from "@/features/auth/hooks/useMe";
-import type { HistorialEntry, Estado, Caso } from "@/lib/api/types";
+import type { HistorialEntry, Estado, Caso, Cliente } from "@/lib/api/types";
 
 interface CasoDetalleViewProps {
   id: string;
@@ -293,7 +294,7 @@ function CasoEditCard({ caso }: { caso: Caso }) {
                   value={current.abogadoId}
                   onValueChange={(v) => set("abogadoId", v ?? "")}
                 >
-                  <SelectTrigger className="h-8 w-full max-w-48 text-sm border-transparent hover:border-input focus:border-input bg-transparent hover:bg-(--slate-100) px-2">
+                  <SelectTrigger className="h-8 w-full max-w-48 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
                     {/* Skip SelectValue — render name directly to avoid UUID display bug */}
                     <span className="flex-1 text-left text-sm truncate">
                       {current.abogadoId
@@ -325,7 +326,7 @@ function CasoEditCard({ caso }: { caso: Caso }) {
                   value={current.numeroOt}
                   onChange={(e) => set("numeroOt", e.target.value)}
                   placeholder="—"
-                  className="w-full max-w-35 rounded border-transparent bg-transparent px-2 py-0.5 text-right text-sm font-medium font-display text-(--amber-500) placeholder:font-sans placeholder:text-muted-foreground placeholder:font-normal outline-none hover:border hover:border-input focus:border focus:border-input focus:bg-(--slate-100)"
+                  className="w-full max-w-35 rounded border border-border/60 bg-(--slate-100)/60 px-2 py-0.5 text-right text-sm font-medium font-display text-(--amber-500) placeholder:font-sans placeholder:text-muted-foreground placeholder:font-normal outline-none hover:border-input focus:border-input focus:bg-(--slate-100)"
                 />
               </dd>
             </div>
@@ -355,7 +356,7 @@ function CasoEditCard({ caso }: { caso: Caso }) {
                   onChange={(v) => set("fechaDj", v)}
                   placeholder="Sin fecha"
                   toDate={new Date()}
-                  className="h-8 w-full max-w-44 text-sm border-transparent hover:border-input bg-transparent hover:bg-(--slate-100)"
+                  className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
                 />
               </dd>
             </div>
@@ -368,7 +369,7 @@ function CasoEditCard({ caso }: { caso: Caso }) {
                   value={current.fechaDenuncia || undefined}
                   onChange={(v) => set("fechaDenuncia", v)}
                   placeholder="Sin fecha"
-                  className="h-8 w-full max-w-44 text-sm border-transparent hover:border-input bg-transparent hover:bg-(--slate-100)"
+                  className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
                 />
               </dd>
             </div>
@@ -391,6 +392,105 @@ function CasoEditCard({ caso }: { caso: Caso }) {
         />
       )}
     </>
+  );
+}
+
+// ── Editable Cliente card ─────────────────────────────────────────────────────
+
+function ClienteEditCard({ cliente }: { cliente: Cliente }) {
+  const { mutate, isPending } = useActualizarCliente(cliente.id);
+
+  const original = useMemo(
+    () => ({ nombre: cliente.nombre, contacto: cliente.contacto ?? "" }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [cliente.nombre, cliente.contacto]
+  );
+
+  const [current, setCurrent] = useState(original);
+
+  useEffect(() => {
+    setCurrent(original);
+  }, [original]);
+
+  function set<K extends keyof typeof current>(key: K, value: string) {
+    setCurrent((prev) => ({ ...prev, [key]: value }));
+  }
+
+  const isDirty =
+    current.nombre !== original.nombre ||
+    current.contacto !== original.contacto;
+
+  function handleSave() {
+    const patch: { nombre?: string; contacto?: string | null } = {};
+    if (current.nombre !== original.nombre) patch.nombre = current.nombre.trim() || original.nombre;
+    if (current.contacto !== original.contacto) patch.contacto = current.contacto.trim() || null;
+    mutate(patch);
+  }
+
+  const inputClass =
+    "w-full rounded border border-border/60 bg-(--slate-100)/60 px-2 py-1 text-right text-sm font-medium text-(--navy-900) outline-none hover:border-input focus:border-input focus:bg-(--slate-100)";
+
+  return (
+    <Card className="rounded-xl border-border shadow-none">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+          Cliente
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-3">
+        <dl>
+          {/* Nombre — editable */}
+          <div className="flex items-center justify-between py-2.5 border-b border-border">
+            <dt className="text-sm text-(--ink-600) shrink-0">Nombre</dt>
+            <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+              <input
+                type="text"
+                value={current.nombre}
+                onChange={(e) => set("nombre", e.target.value)}
+                className={inputClass}
+              />
+            </dd>
+          </div>
+
+          {/* RUT — read-only identifier */}
+          <Field
+            label="RUT"
+            value={<span className="tabular-nums">{cliente.rut}</span>}
+          />
+
+          {/* Contacto — editable */}
+          <div className="flex items-center justify-between py-2.5 border-b border-border">
+            <dt className="text-sm text-(--ink-600) shrink-0">Contacto</dt>
+            <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+              <input
+                type="text"
+                value={current.contacto}
+                onChange={(e) => set("contacto", e.target.value)}
+                placeholder="—"
+                className={`${inputClass} placeholder:font-normal placeholder:text-muted-foreground`}
+              />
+            </dd>
+          </div>
+        </dl>
+
+        {isDirty && (
+          <div className="mt-3 flex justify-end gap-2">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setCurrent(original)}
+              disabled={isPending}
+            >
+              Descartar
+            </Button>
+            <Button size="sm" onClick={handleSave} disabled={isPending}>
+              {isPending && <Loader2 className="size-3.5 animate-spin" />}
+              {isPending ? "Guardando…" : "Guardar"}
+            </Button>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }
 
@@ -503,24 +603,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
       {/* Cards de detalle */}
       <div className="grid gap-4 md:grid-cols-2">
         <CasoEditCard caso={caso} />
-
-        <Card className="rounded-xl border-border shadow-none">
-          <CardHeader className="pb-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
-              Cliente
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-3">
-            <dl>
-              <Field label="Nombre" value={cliente.nombre} />
-              <Field
-                label="RUT"
-                value={<span className="tabular-nums">{cliente.rut}</span>}
-              />
-              <Field label="Contacto" value={cliente.contacto ?? "—"} />
-            </dl>
-          </CardContent>
-        </Card>
+        <ClienteEditCard cliente={cliente} />
       </div>
 
       {/* Operaciones */}
