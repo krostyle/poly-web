@@ -1,9 +1,11 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Button } from "@/components/ui/button";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Table,
   TableBody,
@@ -17,7 +19,6 @@ import {
   SelectContent,
   SelectItem,
   SelectTrigger,
-  SelectValue,
 } from "@/components/ui/select";
 import { EstadoBadge } from "./EstadoBadge";
 import { TransicionarEstadoDialog } from "./TransicionarEstadoDialog";
@@ -27,7 +28,7 @@ import { useCaso } from "@/features/casos/hooks/useCaso";
 import { useHistorialCaso } from "@/features/casos/hooks/useHistorialCaso";
 import { useActualizarCaso } from "@/features/casos/hooks/useActualizarCaso";
 import { useUsuariosBanco } from "@/features/bancos/hooks/useUsuariosBanco";
-import type { HistorialEntry, Estado } from "@/lib/api/types";
+import type { HistorialEntry, Estado, Caso } from "@/lib/api/types";
 
 interface CasoDetalleViewProps {
   id: string;
@@ -121,6 +122,9 @@ function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
           <EstadoBadge estado={d.anterior as Estado} />
           <ArrowRight className="size-3.5 shrink-0 text-(--ink-600)" />
           <EstadoBadge estado={d.nuevo as Estado} />
+          {d.forzado && (
+            <span className="text-xs text-amber-600">(corrección manual)</span>
+          )}
         </span>
       );
 
@@ -154,139 +158,220 @@ function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
   }
 }
 
-// ── Editable Caso card ─────────────────────────────────────────────────────────
+// ── Unsaved changes bar ────────────────────────────────────────────────────────
 
-interface CasoEditCardProps {
-  caso: import("@/lib/api/types").Caso;
-  onSave: (patch: {
-    abogadoId?: string;
-    numeroOt?: string;
-    denunciaValida?: boolean;
-    fechaDenuncia?: string;
-  }) => void;
-}
-
-function CasoEditCard({ caso, onSave }: CasoEditCardProps) {
-  const { data: usuarios } = useUsuariosBanco(caso.bancoId);
-  const [numeroOt, setNumeroOt] = useState(caso.numeroOt ?? "");
-  const [denunciaValida, setDenunciaValida] = useState(caso.denunciaValida);
-  const [fechaDenuncia, setFechaDenuncia] = useState(caso.fechaDenuncia ?? "");
-
-  // Sync if caso changes (e.g., after save)
-  useEffect(() => { setNumeroOt(caso.numeroOt ?? ""); }, [caso.numeroOt]);
-  useEffect(() => { setDenunciaValida(caso.denunciaValida); }, [caso.denunciaValida]);
-  useEffect(() => { setFechaDenuncia(caso.fechaDenuncia ?? ""); }, [caso.fechaDenuncia]);
-
-  const currentAbogadoId = caso.abogadoId ?? "";
-
+function UnsavedChangesBar({
+  onSave,
+  onDiscard,
+  isSaving,
+}: {
+  onSave: () => void;
+  onDiscard: () => void;
+  isSaving: boolean;
+}) {
   return (
-    <Card className="rounded-xl border-border shadow-none">
-      <CardHeader className="pb-0">
-        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
-          Caso
-        </CardTitle>
-      </CardHeader>
-      <CardContent className="pt-3">
-        <dl>
-          {/* Abogado asignado */}
-          <div className="flex items-center justify-between py-2.5 border-b border-border">
-            <dt className="text-sm text-(--ink-600) shrink-0">Abogado</dt>
-            <dd className="ml-4 flex-1 max-w-[60%]">
-              <Select
-                value={currentAbogadoId}
-                onValueChange={(v) => onSave({ abogadoId: v || undefined })}
-              >
-                <SelectTrigger className="h-7 text-xs border-transparent hover:border-input focus:border-input bg-transparent hover:bg-(--slate-100) px-2">
-                  <SelectValue placeholder="Sin asignar" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="" className="text-xs text-muted-foreground">Sin asignar</SelectItem>
-                  {(usuarios ?? []).map((u) => (
-                    <SelectItem key={u.id} value={u.id} className="text-xs">
-                      {u.nombre}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </dd>
-          </div>
-
-          {/* Número OT */}
-          <div className="flex items-center justify-between py-2.5 border-b border-border">
-            <dt className="text-sm text-(--ink-600) shrink-0">N° OT</dt>
-            <dd className="ml-4 flex-1 max-w-[60%] flex justify-end">
-              <input
-                type="text"
-                value={numeroOt}
-                onChange={(e) => setNumeroOt(e.target.value)}
-                onBlur={() => {
-                  const val = numeroOt.trim();
-                  if (val !== (caso.numeroOt ?? "")) {
-                    onSave({ numeroOt: val || undefined });
-                  }
-                }}
-                placeholder="—"
-                className="w-full max-w-35 rounded border-transparent bg-transparent px-2 py-0.5 text-right text-sm font-medium font-display text-(--amber-500) placeholder:font-sans placeholder:text-muted-foreground outline-none hover:border hover:border-input focus:border focus:border-input focus:bg-(--slate-100)"
-              />
-            </dd>
-          </div>
-
-          {/* Denuncia válida */}
-          <div className="flex items-center justify-between py-2.5 border-b border-border">
-            <dt className="text-sm text-(--ink-600)">Denuncia válida</dt>
-            <dd className="text-sm font-medium text-(--navy-900)">
-              <label className="flex items-center gap-2 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={denunciaValida}
-                  onChange={(e) => {
-                    setDenunciaValida(e.target.checked);
-                    onSave({ denunciaValida: e.target.checked });
-                  }}
-                  className="size-4 rounded accent-current"
-                />
-                {denunciaValida ? "Sí" : "No"}
-              </label>
-            </dd>
-          </div>
-
-          {/* Fecha denuncia */}
-          <div className="flex items-center justify-between py-2.5 border-b border-border">
-            <dt className="text-sm text-(--ink-600)">Fecha denuncia</dt>
-            <dd className="ml-4 flex-1 max-w-[60%] flex justify-end">
-              <input
-                type="date"
-                value={fechaDenuncia}
-                onChange={(e) => {
-                  setFechaDenuncia(e.target.value);
-                  if (e.target.value) onSave({ fechaDenuncia: e.target.value });
-                }}
-                className="rounded border-transparent bg-transparent px-2 py-0.5 text-right text-sm tabular-nums text-(--navy-900) outline-none hover:border hover:border-input focus:border focus:border-input focus:bg-(--slate-100)"
-              />
-            </dd>
-          </div>
-
-          <Field
-            label="Fecha DJ"
-            value={<span className="tabular-nums">{formatDate(caso.fechaDj)}</span>}
-          />
-          {caso.motivoTermino && (
-            <Field label="Motivo término" value={caso.motivoTermino} />
-          )}
-          <Field
-            label="Registrado"
-            value={<span className="tabular-nums">{formatDate(caso.createdAt)}</span>}
-          />
-        </dl>
-      </CardContent>
-    </Card>
+    <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between gap-4 border-t border-border bg-(--paper)/95 px-6 py-3 shadow-xl backdrop-blur-sm animate-in slide-in-from-bottom-2 duration-200">
+      <div className="flex items-center gap-2">
+        <span className="size-2 rounded-full bg-amber-400 shrink-0" />
+        <span className="text-sm text-(--ink-600)">Tienes cambios sin guardar</span>
+      </div>
+      <div className="flex items-center gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={onDiscard}
+          disabled={isSaving}
+        >
+          Descartar
+        </Button>
+        <Button size="sm" onClick={onSave} disabled={isSaving}>
+          {isSaving ? "Guardando…" : "Guardar cambios"}
+        </Button>
+      </div>
+    </div>
   );
 }
+
+// ── Editable Caso card ────────────────────────────────────────────────────────
+
+interface EditState {
+  abogadoId: string;
+  numeroOt: string;
+  denunciaValida: boolean;
+  fechaDenuncia: string;
+}
+
+function CasoEditCard({ caso }: { caso: Caso }) {
+  const { data: usuarios } = useUsuariosBanco(caso.bancoId);
+  const { mutate, isPending } = useActualizarCaso(caso.id);
+
+  const original = useMemo<EditState>(
+    () => ({
+      abogadoId: caso.abogadoId ?? "",
+      numeroOt: caso.numeroOt ?? "",
+      denunciaValida: caso.denunciaValida,
+      fechaDenuncia: caso.fechaDenuncia ?? "",
+    }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [caso.abogadoId, caso.numeroOt, caso.denunciaValida, caso.fechaDenuncia]
+  );
+
+  const [current, setCurrent] = useState<EditState>(original);
+
+  // Sync local state when server data updates (after save or external change)
+  useEffect(() => {
+    setCurrent(original);
+  }, [original]);
+
+  function set<K extends keyof EditState>(key: K, value: EditState[K]) {
+    setCurrent((prev) => ({ ...prev, [key]: value }));
+  }
+
+  const isDirty =
+    current.abogadoId !== original.abogadoId ||
+    current.numeroOt !== original.numeroOt ||
+    current.denunciaValida !== original.denunciaValida ||
+    current.fechaDenuncia !== original.fechaDenuncia;
+
+  function handleSave() {
+    const patch: {
+      abogadoId?: string;
+      numeroOt?: string;
+      denunciaValida?: boolean;
+      fechaDenuncia?: string;
+    } = {};
+    if (current.abogadoId !== original.abogadoId)
+      patch.abogadoId = current.abogadoId || undefined;
+    if (current.numeroOt !== original.numeroOt)
+      patch.numeroOt = current.numeroOt.trim() || undefined;
+    if (current.denunciaValida !== original.denunciaValida)
+      patch.denunciaValida = current.denunciaValida;
+    if (current.fechaDenuncia !== original.fechaDenuncia)
+      patch.fechaDenuncia = current.fechaDenuncia || undefined;
+    mutate(patch);
+  }
+
+  // Lookup abogado name from loaded users (avoids displaying UUID when items aren't ready)
+  const abogadoNombre = useMemo(
+    () => usuarios?.find((u) => u.id === current.abogadoId)?.nombre,
+    [usuarios, current.abogadoId]
+  );
+
+  return (
+    <>
+      <Card className="rounded-xl border-border shadow-none">
+        <CardHeader className="pb-0">
+          <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+            Caso
+          </CardTitle>
+        </CardHeader>
+        <CardContent className="pt-3">
+          <dl>
+            {/* Abogado — render label directly so UUID never appears */}
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Abogado</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <Select
+                  value={current.abogadoId}
+                  onValueChange={(v) => set("abogadoId", v ?? "")}
+                >
+                  <SelectTrigger className="h-8 w-full max-w-48 text-sm border-transparent hover:border-input focus:border-input bg-transparent hover:bg-(--slate-100) px-2">
+                    {/* Skip SelectValue — render name directly to avoid UUID display bug */}
+                    <span className="flex-1 text-left text-sm truncate">
+                      {current.abogadoId
+                        ? (abogadoNombre ?? "—")
+                        : <span className="text-muted-foreground text-sm">Sin asignar</span>
+                      }
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="" className="text-sm text-muted-foreground">
+                      Sin asignar
+                    </SelectItem>
+                    {(usuarios ?? []).map((u) => (
+                      <SelectItem key={u.id} value={u.id} className="text-sm">
+                        {u.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </dd>
+            </div>
+
+            {/* N° OT */}
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">N° OT</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <input
+                  type="text"
+                  value={current.numeroOt}
+                  onChange={(e) => set("numeroOt", e.target.value)}
+                  placeholder="—"
+                  className="w-full max-w-35 rounded border-transparent bg-transparent px-2 py-0.5 text-right text-sm font-medium font-display text-(--amber-500) placeholder:font-sans placeholder:text-muted-foreground placeholder:font-normal outline-none hover:border hover:border-input focus:border focus:border-input focus:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+
+            {/* Denuncia válida */}
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600)">Denuncia válida</dt>
+              <dd>
+                <label className="flex items-center gap-2 cursor-pointer select-none text-sm font-medium text-(--navy-900)">
+                  <input
+                    type="checkbox"
+                    checked={current.denunciaValida}
+                    onChange={(e) => set("denunciaValida", e.target.checked)}
+                    className="size-4 rounded accent-current"
+                  />
+                  {current.denunciaValida ? "Sí" : "No"}
+                </label>
+              </dd>
+            </div>
+
+            {/* Fecha denuncia */}
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha denuncia</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <DatePicker
+                  value={current.fechaDenuncia || undefined}
+                  onChange={(v) => set("fechaDenuncia", v)}
+                  placeholder="Sin fecha"
+                  className="h-8 w-full max-w-44 text-sm border-transparent hover:border-input bg-transparent hover:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+
+            <Field
+              label="Fecha DJ"
+              value={<span className="tabular-nums">{formatDate(caso.fechaDj)}</span>}
+            />
+            {caso.motivoTermino && (
+              <Field label="Motivo término" value={caso.motivoTermino} />
+            )}
+            <Field
+              label="Registrado"
+              value={<span className="tabular-nums">{formatDate(caso.createdAt)}</span>}
+            />
+          </dl>
+        </CardContent>
+      </Card>
+
+      {isDirty && (
+        <UnsavedChangesBar
+          onSave={handleSave}
+          onDiscard={() => setCurrent(original)}
+          isSaving={isPending}
+        />
+      )}
+    </>
+  );
+}
+
+// ── Main view ─────────────────────────────────────────────────────────────────
 
 export function CasoDetalleView({ id }: CasoDetalleViewProps) {
   const { data, isLoading, isError, refetch } = useCaso(id);
   const { data: historial } = useHistorialCaso(id);
-  const actualizar = useActualizarCaso(id);
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -316,7 +401,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
   const totalCLP = operaciones.reduce((sum, op) => sum + op.montoCLP, 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 pb-20">
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -342,7 +427,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
       {/* Cards de detalle */}
       <div className="grid gap-4 md:grid-cols-2">
-        <CasoEditCard caso={caso} onSave={(patch) => actualizar.mutate(patch)} />
+        <CasoEditCard caso={caso} />
 
         <Card className="rounded-xl border-border shadow-none">
           <CardHeader className="pb-0">
