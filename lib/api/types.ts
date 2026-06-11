@@ -1,14 +1,32 @@
 // Mirrors of the Go domain types
 
 export type Estado =
-  | "LLAMADA"
+  | "INGRESO"
   | "REVISION"
-  | "SUSPENSION"
-  | "PRE_JUDICIALIZACION"
-  | "RESTITUCION"
-  | "JUDICIALIZACION"
-  | "CIERRE"
-  | "TERMINADO";
+  | "PREJUDICIAL"
+  | "PAGO_NORMATIVO"
+  | "JUDICIAL"
+  | "AUDIENCIA"
+  | "SENTENCIA"
+  | "APELACION"
+  | "SENTENCIA_SEGUNDA"
+  | "CUMPLIMIENTO"
+  | "TERMINADO"
+  | "CIERRE";
+
+export type MotivoTermino =
+  | "IMPROCEDENTE"
+  | "EXTEMPORANEO"
+  | "BUSQUEDAS_NEGATIVAS"
+  | "DEUDOR_FALLECIDO"
+  | "DESISTIMIENTO_CLIENTE"
+  | "DESISTIMIENTO_BANCO"
+  | "DESISTIMIENTO_DENUNCIA_INVALIDA"
+  | "DESISTIMIENTO_SIN_DENUNCIA"
+  | "SENTENCIA_FAVORABLE_BANCO"
+  | "SENTENCIA_DESFAVORABLE_BANCO"
+  | "AVENIMIENTO"
+  | "ABANDONO_PROCEDIMIENTO";
 
 export type Semaforo = "VERDE" | "AMARILLO" | "ROJO" | "VENCIDO";
 
@@ -31,7 +49,7 @@ export interface Caso {
   fechaDj: string; // ISO date
   fechaDenuncia?: string;
   denunciaValida: boolean;
-  motivoTermino?: string;
+  motivoTermino?: MotivoTermino;
   createdAt: string;
   updatedAt: string;
 }

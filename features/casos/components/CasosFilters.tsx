@@ -15,14 +15,18 @@ import type { CasoFilters } from "@/lib/api/casos";
 import type { Estado } from "@/lib/api/types";
 
 const ESTADOS: { value: Estado; label: string }[] = [
-  { value: "LLAMADA", label: "Llamada" },
-  { value: "REVISION", label: "Revisión" },
-  { value: "SUSPENSION", label: "Suspensión" },
-  { value: "PRE_JUDICIALIZACION", label: "Pre-judicialización" },
-  { value: "RESTITUCION", label: "Restitución" },
-  { value: "JUDICIALIZACION", label: "Judicialización" },
-  { value: "CIERRE", label: "Cierre" },
-  { value: "TERMINADO", label: "Terminado" },
+  { value: "INGRESO",           label: "Ingreso" },
+  { value: "REVISION",          label: "Revisión" },
+  { value: "PREJUDICIAL",       label: "Medida Precautoria" },
+  { value: "PAGO_NORMATIVO",    label: "Pago Normativo" },
+  { value: "JUDICIAL",          label: "Demanda" },
+  { value: "AUDIENCIA",         label: "Audiencia" },
+  { value: "SENTENCIA",         label: "Sentencia" },
+  { value: "APELACION",         label: "Apelación" },
+  { value: "SENTENCIA_SEGUNDA", label: "Sentencia 2ª Inst." },
+  { value: "CUMPLIMIENTO",      label: "Cumplimiento" },
+  { value: "TERMINADO",         label: "Terminado" },
+  { value: "CIERRE",            label: "Cierre" },
 ];
 
 interface CasosFiltersProps {

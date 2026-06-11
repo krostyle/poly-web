@@ -104,7 +104,7 @@ function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
       fechaDj: raw.caso.fecha_dj,
       fechaDenuncia: raw.caso.fecha_denuncia ?? undefined,
       denunciaValida: raw.caso.denuncia_valida,
-      motivoTermino: raw.caso.motivo_termino ?? undefined,
+      motivoTermino: (raw.caso.motivo_termino ?? undefined) as import("./types").MotivoTermino | undefined,
       createdAt: raw.caso.created_at,
       updatedAt: raw.caso.updated_at,
     },
