@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import { FolderOpen, AlertCircle } from "lucide-react";
 import {
   Table,
@@ -40,6 +41,7 @@ function TableSkeleton() {
 }
 
 export function CasosTable({ filters }: { filters?: CasoFilters }) {
+  const router = useRouter();
   const { data, isLoading, isError, refetch } = useCasos(filters);
   const { data: me } = useMe();
 
@@ -135,18 +137,14 @@ export function CasosTable({ filters }: { filters?: CasoFilters }) {
             {casos.map((caso) => (
               <TableRow
                 key={caso.id}
-                className="hover:bg-(--slate-100) transition-colors"
+                className="hover:bg-(--slate-100) transition-colors cursor-pointer"
+                onClick={() => router.push(`/casos/${caso.id}`)}
               >
                 <TableCell>
                   <EstadoBadge estado={caso.estado} />
                 </TableCell>
-                <TableCell>
-                  <Link
-                    href={`/casos/${caso.id}`}
-                    className="text-sm font-medium text-(--navy-900) hover:underline underline-offset-2"
-                  >
-                    {caso.clienteNombre}
-                  </Link>
+                <TableCell className="text-sm font-medium text-(--navy-900)">
+                  {caso.clienteNombre}
                 </TableCell>
                 <TableCell className="tabular-nums text-sm text-(--ink-600)">
                   {caso.clienteRut}

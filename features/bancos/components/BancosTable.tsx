@@ -1,7 +1,7 @@
 "use client";
 
-import Link from "next/link";
-import { FolderOpen, AlertCircle, ChevronRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { FolderOpen, AlertCircle } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -36,6 +36,7 @@ function TableSkeleton() {
 }
 
 export function BancosTable() {
+  const router = useRouter();
   const { data: bancos, isLoading, isError, refetch } = useBancos();
 
   return (
@@ -81,27 +82,20 @@ export function BancosTable() {
               <TableHead className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
                 Registrado
               </TableHead>
-              <TableHead className="w-8" />
             </TableRow>
           </TableHeader>
           <TableBody>
             {bancos.map((banco) => (
-              <TableRow key={banco.id} className="hover:bg-(--slate-100) transition-colors">
-                <TableCell>
-                  <Link
-                    href={`/configuracion/bancos/${banco.id}`}
-                    className="text-sm font-medium text-(--navy-900) hover:underline underline-offset-2"
-                  >
-                    {banco.nombre}
-                  </Link>
+              <TableRow
+                key={banco.id}
+                className="hover:bg-(--slate-100) transition-colors cursor-pointer"
+                onClick={() => router.push(`/configuracion/bancos/${banco.id}`)}
+              >
+                <TableCell className="text-sm font-medium text-(--navy-900)">
+                  {banco.nombre}
                 </TableCell>
                 <TableCell className="tabular-nums text-sm text-(--ink-600)">
                   {formatDate(banco.createdAt)}
-                </TableCell>
-                <TableCell>
-                  <Link href={`/configuracion/bancos/${banco.id}`}>
-                    <ChevronRight className="size-4 text-(--ink-600)" />
-                  </Link>
                 </TableCell>
               </TableRow>
             ))}
