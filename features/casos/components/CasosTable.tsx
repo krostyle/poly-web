@@ -13,6 +13,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { EstadoBadge } from "./EstadoBadge";
 import { useCasos } from "@/features/casos/hooks/useCasos";
+import { useMe } from "@/features/auth/hooks/useMe";
 
 function formatDate(iso: string): string {
   return new Date(iso).toLocaleDateString("es-CL", {
@@ -39,8 +40,11 @@ function TableSkeleton() {
 
 export function CasosTable() {
   const { data, isLoading, isError, refetch } = useCasos();
+  const { data: me } = useMe();
 
   const casos = data?.casos ?? [];
+  const noBancos = !isLoading && me !== undefined && me.bancos.length === 0;
+  const isAdmin = me?.usuario.rol === "ADMIN";
 
   return (
     <div className="rounded-xl border-border bg-(--paper) overflow-hidden">
@@ -71,12 +75,29 @@ export function CasosTable() {
           <div className="rounded-xl bg-(--slate-100) p-3.5">
             <FolderOpen className="size-6 text-(--ink-600)" strokeWidth={1.5} />
           </div>
-          <div>
-            <p className="text-sm font-medium text-(--navy-900)">Sin casos registrados</p>
-            <p className="mt-0.5 text-xs text-(--ink-600)">
-              Los casos aparecerán aquí una vez que los crees.
-            </p>
-          </div>
+          {noBancos ? (
+            <div>
+              <p className="text-sm font-medium text-(--navy-900)">Sin bancos asignados</p>
+              <p className="mt-0.5 text-xs text-(--ink-600)">
+                Necesitas acceso a al menos un banco para ver y registrar casos.
+              </p>
+              {isAdmin && (
+                <Link
+                  href="/configuracion/bancos"
+                  className="mt-3 inline-flex text-xs font-medium text-(--navy-700) underline underline-offset-2 hover:text-(--navy-900) transition-colors"
+                >
+                  Ir a Configuración →
+                </Link>
+              )}
+            </div>
+          ) : (
+            <div>
+              <p className="text-sm font-medium text-(--navy-900)">Sin casos registrados</p>
+              <p className="mt-0.5 text-xs text-(--ink-600)">
+                Los casos aparecerán aquí una vez que los crees.
+              </p>
+            </div>
+          )}
         </div>
       ) : (
         <div className="overflow-x-auto">
