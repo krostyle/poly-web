@@ -72,7 +72,9 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
         ) : bancos && bancos.length > 0 ? (
           <Select value={bancoId || undefined} onValueChange={(val) => setBancoId(val ?? "")}>
             <SelectTrigger id="banco" className="w-full">
-              <SelectValue placeholder="Seleccionar banco" />
+              <SelectValue placeholder="Seleccionar banco">
+                {bancoId ? bancos?.find((b) => b.id === bancoId)?.nombre : undefined}
+              </SelectValue>
             </SelectTrigger>
             <SelectContent>
               {bancos.map((b) => (

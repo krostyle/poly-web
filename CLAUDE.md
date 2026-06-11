@@ -227,10 +227,27 @@ function ErrorState({ onRetry }: { onRetry?: () => void }) {
 
 ### Estado de carga (skeleton) — reglas
 
+**Regla absoluta: nunca texto "Cargando…" ni inputs/selects deshabilitados con placeholder de carga.**
+
 - El skeleton debe imitar la **forma exacta** del contenido que cargará
 - En tablas: filas de skeleton del mismo alto que las filas de datos
 - En cards de detalle: bloques que coinciden con los campos reales
 - En ningún caso mostrar un spinner genérico sin contexto
+- **Selects que cargan datos**: `<Skeleton className="h-9 w-full rounded-md" />` — mismo alto que el trigger
+- **Texto en sidebar o encabezados**: `<Skeleton className="h-5 w-32" />` con el mismo color de fondo
+
+```tsx
+// ✅ Correcto — Select cargando
+{isLoading ? (
+  <Skeleton className="h-9 w-full rounded-md" />
+) : (
+  <Select ...>...</Select>
+)}
+
+// ❌ Nunca esto
+{isLoading && <Input disabled placeholder="Cargando datos…" />}
+{isLoading && <Select disabled><SelectTrigger><SelectValue placeholder="Cargando…" /></SelectTrigger></Select>}
+```
 
 ```tsx
 // Skeleton de tabla (6 filas)
@@ -298,6 +315,20 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
     {isPending ? "Guardando…" : "Guardar"}
   </Button>
 </div>
+```
+
+### Select con value=UUID (@base-ui)
+
+`@base-ui/react` no puede resolver el texto del item seleccionado cuando el popup está cerrado (items fuera del DOM). Si `value` es un UUID y el label es diferente, **siempre pasar el texto como children de `SelectValue`**:
+
+```tsx
+// ✅ Correcto — value es UUID, texto viene de los datos
+<SelectValue placeholder="Seleccionar banco">
+  {selectedId ? items.find((i) => i.id === selectedId)?.nombre : undefined}
+</SelectValue>
+
+// ❌ Nunca esto cuando value ≠ texto mostrado (mostrará el UUID crudo)
+<SelectValue placeholder="Seleccionar banco" />
 ```
 
 ---

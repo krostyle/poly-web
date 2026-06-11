@@ -82,7 +82,9 @@ export function AsignarUsuarioDialog({ bancoId, asignados }: AsignarUsuarioDialo
             ) : (
               <Select value={usuarioId || undefined} onValueChange={(v) => setUsuarioId(v ?? "")}>
                 <SelectTrigger id="asignar-usuario" className="w-full">
-                  <SelectValue placeholder="Seleccionar usuario" />
+                  <SelectValue placeholder="Seleccionar usuario">
+                    {usuarioId ? disponibles.find((u) => u.id === usuarioId)?.nombre : undefined}
+                  </SelectValue>
                 </SelectTrigger>
                 <SelectContent>
                   {disponibles.map((u) => (
