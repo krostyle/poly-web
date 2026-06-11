@@ -42,6 +42,7 @@ export function CasosFilters({ onChange }: CasosFiltersProps) {
   const [bancoId, setBancoId] = useState("");
   const [estadoVal, setEstadoVal] = useState<Estado | "">("");
   const [soloMios, setSoloMios] = useState(false);
+  const [incluirCerrados, setIncluirCerrados] = useState(false);
 
   // Debounce search input 300ms
   useEffect(() => {
@@ -56,20 +57,22 @@ export function CasosFilters({ onChange }: CasosFiltersProps) {
     if (bancoId) filters.bancoId = bancoId;
     if (estadoVal) filters.estado = estadoVal;
     if (soloMios) filters.soloMios = true;
+    if (incluirCerrados) filters.excluirCierre = false;
     onChange(filters);
-  }, [debouncedQ, bancoId, estadoVal, soloMios, onChange]);
+  }, [debouncedQ, bancoId, estadoVal, soloMios, incluirCerrados, onChange]);
 
   const isAdmin = me?.usuario.rol === "ADMIN";
   // Admins see all bancos for filter; others see only their assigned ones
   const bancos = isAdmin ? (todosLosBancos ?? []) : (me?.bancos ?? []);
 
-  const hasFilters = q || bancoId || estadoVal || soloMios;
+  const hasFilters = q || bancoId || estadoVal || soloMios || incluirCerrados;
 
   function reset() {
     setQ("");
     setBancoId("");
     setEstadoVal("");
     setSoloMios(false);
+    setIncluirCerrados(false);
   }
 
   return (
@@ -127,6 +130,17 @@ export function CasosFilters({ onChange }: CasosFiltersProps) {
           className="rounded border-input size-3.5 accent-current"
         />
         Mis casos
+      </label>
+
+      {/* Incluir cerrados toggle */}
+      <label className="flex items-center gap-1.5 cursor-pointer select-none text-xs text-(--ink-600)">
+        <input
+          type="checkbox"
+          checked={incluirCerrados}
+          onChange={(e) => setIncluirCerrados(e.target.checked)}
+          className="rounded border-input size-3.5 accent-current"
+        />
+        Incluir cerrados
       </label>
 
       {/* Clear */}

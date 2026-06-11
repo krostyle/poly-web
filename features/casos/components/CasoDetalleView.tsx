@@ -1,10 +1,19 @@
 "use client";
 
 import { useState, useEffect, useMemo } from "react";
-import { AlertCircle, ArrowRight } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { AlertCircle, ArrowRight, Trash2 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { DatePicker } from "@/components/ui/date-picker";
 import {
   Table,
@@ -27,7 +36,9 @@ import { DocumentosCard } from "@/features/documentos/components/DocumentosCard"
 import { useCaso } from "@/features/casos/hooks/useCaso";
 import { useHistorialCaso } from "@/features/casos/hooks/useHistorialCaso";
 import { useActualizarCaso } from "@/features/casos/hooks/useActualizarCaso";
+import { useEliminarCaso } from "@/features/casos/hooks/useEliminarCaso";
 import { useUsuariosBanco } from "@/features/bancos/hooks/useUsuariosBanco";
+import { useMe } from "@/features/auth/hooks/useMe";
 import type { HistorialEntry, Estado, Caso } from "@/lib/api/types";
 
 interface CasoDetalleViewProps {
@@ -370,8 +381,12 @@ function CasoEditCard({ caso }: { caso: Caso }) {
 // ── Main view ─────────────────────────────────────────────────────────────────
 
 export function CasoDetalleView({ id }: CasoDetalleViewProps) {
+  const router = useRouter();
   const { data, isLoading, isError, refetch } = useCaso(id);
   const { data: historial } = useHistorialCaso(id);
+  const { data: me } = useMe();
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const eliminar = useEliminarCaso(id, () => router.push("/casos"));
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -399,9 +414,41 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
   const { caso, cliente, operaciones } = data;
   const totalCLP = operaciones.reduce((sum, op) => sum + op.montoCLP, 0);
+  const isAdmin = me?.usuario.rol === "ADMIN";
+  const canDelete = isAdmin && caso.estado === "INGRESO";
 
   return (
     <div className="space-y-6 pb-20">
+      {/* Delete confirmation dialog */}
+      <Dialog open={deleteOpen} onOpenChange={setDeleteOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>¿Eliminar este caso?</DialogTitle>
+            <DialogDescription>
+              Se eliminará permanentemente el caso de{" "}
+              <strong>{cliente.nombre}</strong> y todos sus registros
+              asociados. Esta acción no se puede deshacer.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="outline"
+              onClick={() => setDeleteOpen(false)}
+              disabled={eliminar.isPending}
+            >
+              Cancelar
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={() => eliminar.mutate()}
+              disabled={eliminar.isPending}
+            >
+              {eliminar.isPending ? "Eliminando…" : "Sí, eliminar"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
@@ -422,6 +469,16 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
             estadoActual={caso.estado}
             denunciaValida={caso.denunciaValida}
           />
+          {canDelete && (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              onClick={() => setDeleteOpen(true)}
+            >
+              <Trash2 className="size-4" />
+            </Button>
+          )}
         </div>
       </div>
 

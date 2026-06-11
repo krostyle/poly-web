@@ -131,6 +131,7 @@ export interface CasoFilters {
   bancoId?: string;
   estado?: Estado;
   soloMios?: boolean;
+  excluirCierre?: boolean;
 }
 
 export async function listarCasos(
@@ -142,6 +143,7 @@ export async function listarCasos(
   if (filters?.bancoId) params.set("banco_id", filters.bancoId);
   if (filters?.estado) params.set("estado", filters.estado);
   if (filters?.soloMios) params.set("abogado_id", "me");
+  if (filters?.excluirCierre === false) params.set("excluir_cierre", "false");
 
   const qs = params.toString();
   const raw = await apiClient.request<RawListarCasosResponse>(
@@ -210,6 +212,10 @@ export async function transicionarEstado(
     body: JSON.stringify({ estado, motivo_termino: motivoTermino, forzar: forzar ?? false }),
     token,
   });
+}
+
+export async function eliminarCaso(id: string, token: string): Promise<void> {
+  await apiClient.request<void>(`/v1/casos/${id}`, { method: "DELETE", token });
 }
 
 export async function getHistorial(casoId: string, token: string): Promise<HistorialEntry[]> {
