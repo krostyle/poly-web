@@ -10,6 +10,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { AlertCircle } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
 import { useCrearCaso } from "@/features/casos/hooks/useCrearCaso";
 import { useBancos } from "@/features/casos/hooks/useBancos";
 
@@ -53,7 +54,7 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
           Banco
         </label>
         {loadingBancos ? (
-          <Input disabled placeholder="Cargando bancos…" />
+          <Skeleton className="h-9 w-full rounded-md" />
         ) : bancosError ? (
           <div className="flex items-center gap-2.5 rounded-lg border border-border bg-(--slate-100) px-3 py-2.5">
             <AlertCircle className="size-4 shrink-0 text-(--ink-600)" strokeWidth={1.5} />

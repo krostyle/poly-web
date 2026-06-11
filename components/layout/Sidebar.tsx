@@ -5,6 +5,7 @@ import { X } from "lucide-react";
 import { usePathname } from "next/navigation";
 import { useOrganization } from "@clerk/nextjs";
 import { useMe } from "@/features/auth/hooks/useMe";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const mainNav = [
   { href: "/dashboard", label: "Dashboard" },
@@ -50,9 +51,13 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
         <p className="text-[10px] font-semibold tracking-widest text-white/30 uppercase">
           Poly
         </p>
-        <p className="font-display text-base font-semibold text-white truncate pr-8">
-          {organization?.name ?? "Cargando…"}
-        </p>
+        {organization?.name ? (
+          <p className="font-display text-base font-semibold text-white truncate pr-8">
+            {organization.name}
+          </p>
+        ) : (
+          <Skeleton className="h-5 w-32 bg-white/10" />
+        )}
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">
