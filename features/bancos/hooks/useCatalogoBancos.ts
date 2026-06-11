@@ -10,6 +10,6 @@ export function useCatalogoBancos() {
       const token = await getToken();
       return listarCatalogoBancos(token!);
     },
-    staleTime: Infinity, // el catálogo no cambia en runtime
+    staleTime: 24 * 60 * 60 * 1000, // 24h — el catálogo es estático
   });
 }
