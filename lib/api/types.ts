@@ -98,8 +98,8 @@ export interface CrearCasoPayload {
 export interface HistorialEntry {
   id: string;
   usuarioNombre: string;
-  estadoAnterior: string;
-  estadoNuevo: string;
+  estadoAnterior: Estado;
+  estadoNuevo: Estado;
   createdAt: string;
 }
 

@@ -1,12 +1,80 @@
 import { apiClient } from "./client";
-import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry } from "./types";
+import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry, Estado } from "./types";
 
-interface ListarCasosResponse {
-  casos: CasoListItem[];
+// Raw snake_case shapes returned by poly-api
+
+interface RawCasoListItem {
+  id: string;
+  banco_id: string;
+  banco_nombre: string;
+  cliente_id: string;
+  cliente_rut: string;
+  cliente_nombre: string;
+  abogado_id: string | null;
+  numero_ot: string | null;
+  estado: Estado;
+  fecha_dj: string;
+  denuncia_valida: boolean;
+  created_at: string;
+}
+
+interface RawOperacion {
+  id: string;
+  caso_id: string;
+  medio_pago: "TARJETA_CREDITO" | "TARJETA_DEBITO" | "TRANSFERENCIA" | "CAJERO";
+  relacion: "CUENTA_PROPIA" | "FAMILIAR" | "TERCERO";
+  monto_clp: number;
+  monto_uf: number | null;
+  fecha_op: string;
+}
+
+interface RawCaso {
+  id: string;
+  estudio_id: string;
+  banco_id: string;
+  cliente_id: string;
+  abogado_id: string | null;
+  numero_ot: string | null;
+  estado: Estado;
+  fecha_dj: string;
+  fecha_denuncia: string | null;
+  denuncia_valida: boolean;
+  motivo_termino: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+interface RawCliente {
+  id: string;
+  rut: string;
+  nombre: string;
+  contacto: string | null;
+}
+
+interface RawCasoDetalle {
+  caso: RawCaso;
+  cliente: RawCliente;
+  operaciones: RawOperacion[];
+}
+
+interface RawListarCasosResponse {
+  casos: RawCasoListItem[];
   total: number;
 }
 
-function mapCasoListItem(raw: any): CasoListItem {
+interface RawHistorialEntry {
+  id: string;
+  usuario_nombre: string;
+  estado_anterior: Estado;
+  estado_nuevo: Estado;
+  created_at: string;
+}
+
+interface RawHistorialResponse {
+  historial: RawHistorialEntry[];
+}
+
+function mapCasoListItem(raw: RawCasoListItem): CasoListItem {
   return {
     id: raw.id,
     bancoId: raw.banco_id,
@@ -23,7 +91,7 @@ function mapCasoListItem(raw: any): CasoListItem {
   };
 }
 
-function mapCasoDetalle(raw: any): CasoDetalle {
+function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
   return {
     caso: {
       id: raw.caso.id,
@@ -46,7 +114,7 @@ function mapCasoDetalle(raw: any): CasoDetalle {
       nombre: raw.cliente.nombre,
       contacto: raw.cliente.contacto ?? undefined,
     },
-    operaciones: (raw.operaciones ?? []).map((op: any) => ({
+    operaciones: (raw.operaciones ?? []).map((op) => ({
       id: op.id,
       casoId: op.caso_id,
       medioPago: op.medio_pago,
@@ -58,8 +126,8 @@ function mapCasoDetalle(raw: any): CasoDetalle {
   };
 }
 
-export async function listarCasos(token: string): Promise<ListarCasosResponse> {
-  const raw = await apiClient.request<any>("/v1/casos", { token });
+export async function listarCasos(token: string): Promise<{ casos: CasoListItem[]; total: number }> {
+  const raw = await apiClient.request<RawListarCasosResponse>("/v1/casos", { token });
   return {
     casos: (raw.casos ?? []).map(mapCasoListItem),
     total: raw.total ?? 0,
@@ -67,7 +135,7 @@ export async function listarCasos(token: string): Promise<ListarCasosResponse> {
 }
 
 export async function obtenerCasoDetalle(id: string, token: string): Promise<CasoDetalle> {
-  const raw = await apiClient.request<any>(`/v1/casos/${id}`, { token });
+  const raw = await apiClient.request<RawCasoDetalle>(`/v1/casos/${id}`, { token });
   return mapCasoDetalle(raw);
 }
 
@@ -79,7 +147,7 @@ export async function crearCaso(payload: CrearCasoPayload, token: string): Promi
     cliente_contacto: payload.clienteContacto,
     fecha_dj: payload.fechaDj,
   };
-  const raw = await apiClient.request<any>("/v1/casos", {
+  const raw = await apiClient.request<RawCasoDetalle>("/v1/casos", {
     method: "POST",
     body: JSON.stringify(body),
     token,
@@ -97,12 +165,12 @@ export async function actualizarCaso(
   },
   token: string
 ): Promise<CasoDetalle> {
-  const body: any = {};
+  const body: Record<string, unknown> = {};
   if (patch.abogadoId !== undefined) body.abogado_id = patch.abogadoId;
   if (patch.numeroOt !== undefined) body.numero_ot = patch.numeroOt;
   if (patch.denunciaValida !== undefined) body.denuncia_valida = patch.denunciaValida;
   if (patch.fechaDenuncia !== undefined) body.fecha_denuncia = patch.fechaDenuncia;
-  const raw = await apiClient.request<any>(`/v1/casos/${id}`, {
+  const raw = await apiClient.request<RawCasoDetalle>(`/v1/casos/${id}`, {
     method: "PATCH",
     body: JSON.stringify(body),
     token,
@@ -124,8 +192,8 @@ export async function transicionarEstado(
 }
 
 export async function getHistorial(casoId: string, token: string): Promise<HistorialEntry[]> {
-  const raw = await apiClient.request<any>(`/v1/casos/${casoId}/historial`, { token });
-  return (raw.historial ?? []).map((e: any) => ({
+  const raw = await apiClient.request<RawHistorialResponse>(`/v1/casos/${casoId}/historial`, { token });
+  return (raw.historial ?? []).map((e) => ({
     id: e.id,
     usuarioNombre: e.usuario_nombre,
     estadoAnterior: e.estado_anterior,
@@ -152,7 +220,7 @@ export async function agregarOperacion(
     monto_uf: op.montoUF,
     fecha_op: op.fechaOp,
   };
-  const raw = await apiClient.request<any>(`/v1/casos/${casoId}/operaciones`, {
+  const raw = await apiClient.request<RawOperacion>(`/v1/casos/${casoId}/operaciones`, {
     method: "POST",
     body: JSON.stringify(body),
     token,

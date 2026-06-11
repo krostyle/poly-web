@@ -285,9 +285,9 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
                     {formatDateTime(entry.createdAt)}
                   </span>
                   <span className="flex items-center gap-1.5">
-                    <EstadoBadge estado={entry.estadoAnterior as any} />
+                    <EstadoBadge estado={entry.estadoAnterior} />
                     <ArrowRight className="size-3.5 shrink-0 text-(--ink-600)" />
-                    <EstadoBadge estado={entry.estadoNuevo as any} />
+                    <EstadoBadge estado={entry.estadoNuevo} />
                   </span>
                   <span className="ml-auto text-xs text-(--ink-600) shrink-0">
                     {entry.usuarioNombre}

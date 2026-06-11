@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, type FormEvent, useEffect } from "react";
+import { useState, type FormEvent } from "react";
 import {
   Dialog,
   DialogContent,
@@ -22,10 +22,6 @@ export function EditarBancoDialog({ banco }: EditarBancoDialogProps) {
   const [nombre, setNombre] = useState(banco.nombre);
   const { mutate, isPending, error, reset } = useActualizarBanco();
 
-  useEffect(() => {
-    if (open) setNombre(banco.nombre);
-  }, [open, banco.nombre]);
-
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     mutate({ id: banco.id, nombre }, {
@@ -42,7 +38,7 @@ export function EditarBancoDialog({ banco }: EditarBancoDialogProps) {
   }
 
   return (
-    <Dialog open={open} onOpenChange={(next) => { if (!next) handleClose(); else setOpen(true); }}>
+    <Dialog open={open} onOpenChange={(next) => { if (!next) handleClose(); else { setOpen(true); setNombre(banco.nombre); } }}>
       <DialogTrigger render={<Button variant="outline" size="sm" />}>
         Editar nombre
       </DialogTrigger>
