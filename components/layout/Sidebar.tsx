@@ -26,7 +26,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { organization } = useOrganization();
   const { data: me, isLoading: loadingMe } = useMe();
-  const showAdmin = loadingMe || me?.usuario.rol === "ADMIN";
+  const showAdmin = !loadingMe && me?.usuario.rol === "ADMIN";
 
   const navItems = showAdmin ? [...mainNav, ...adminNav] : mainNav;
 
