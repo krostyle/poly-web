@@ -471,12 +471,13 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
           />
           {canDelete && (
             <Button
-              variant="ghost"
+              variant="outline"
               size="sm"
-              className="text-destructive hover:text-destructive hover:bg-destructive/10"
+              className="border-destructive/40 text-destructive hover:bg-destructive/10 hover:border-destructive gap-1.5"
               onClick={() => setDeleteOpen(true)}
             >
-              <Trash2 className="size-4" />
+              <Trash2 className="size-3.5" />
+              Eliminar
             </Button>
           )}
         </div>

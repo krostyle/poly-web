@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { FolderOpen, AlertCircle } from "lucide-react";
+import { useState } from "react";
+import { FolderOpen, AlertCircle, Loader2 } from "lucide-react";
 import {
   Table,
   TableBody,
@@ -44,6 +45,7 @@ export function CasosTable({ filters }: { filters?: CasoFilters }) {
   const router = useRouter();
   const { data, isLoading, isError, refetch } = useCasos(filters);
   const { data: me } = useMe();
+  const [navigatingId, setNavigatingId] = useState<string | null>(null);
 
   const casos = data?.casos ?? [];
   const noBancos = !isLoading && me !== undefined && me.bancos.length === 0;
@@ -119,13 +121,13 @@ export function CasosTable({ filters }: { filters?: CasoFilters }) {
               <TableHead className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
                 Cliente
               </TableHead>
-              <TableHead className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+              <TableHead className="hidden md:table-cell text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
                 RUT
               </TableHead>
-              <TableHead className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+              <TableHead className="hidden lg:table-cell text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
                 Banco
               </TableHead>
-              <TableHead className="text-xs font-semibold uppercase tracking-wide text-(--ink-600) tabular-nums">
+              <TableHead className="hidden md:table-cell text-xs font-semibold uppercase tracking-wide text-(--ink-600) tabular-nums">
                 Fecha DJ
               </TableHead>
               <TableHead className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
@@ -134,38 +136,53 @@ export function CasosTable({ filters }: { filters?: CasoFilters }) {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {casos.map((caso) => (
-              <TableRow
-                key={caso.id}
-                className="hover:bg-(--slate-100) transition-colors cursor-pointer"
-                onClick={() => router.push(`/casos/${caso.id}`)}
-              >
-                <TableCell>
-                  <EstadoBadge estado={caso.estado} />
-                </TableCell>
-                <TableCell className="text-sm font-medium text-(--navy-900)">
-                  {caso.clienteNombre}
-                </TableCell>
-                <TableCell className="tabular-nums text-sm text-(--ink-600)">
-                  {caso.clienteRut}
-                </TableCell>
-                <TableCell className="text-sm text-(--ink-600)">
-                  {caso.bancoNombre}
-                </TableCell>
-                <TableCell className="tabular-nums text-sm text-(--ink-600)">
-                  {formatDate(caso.fechaDj)}
-                </TableCell>
-                <TableCell className="tabular-nums text-sm">
-                  {caso.numeroOt ? (
-                    <span className="font-display font-medium text-(--amber-500)">
-                      {caso.numeroOt}
-                    </span>
-                  ) : (
-                    <span className="text-muted-foreground">—</span>
-                  )}
-                </TableCell>
-              </TableRow>
-            ))}
+            {casos.map((caso) => {
+              const isNavigating = navigatingId === caso.id;
+              return (
+                <TableRow
+                  key={caso.id}
+                  className={`transition-colors cursor-pointer ${
+                    isNavigating
+                      ? "bg-(--slate-100) opacity-60 pointer-events-none"
+                      : "hover:bg-(--slate-100)"
+                  }`}
+                  onClick={() => {
+                    if (navigatingId) return;
+                    setNavigatingId(caso.id);
+                    router.push(`/casos/${caso.id}`);
+                  }}
+                >
+                  <TableCell>
+                    {isNavigating ? (
+                      <Loader2 className="size-4 animate-spin text-(--ink-600)" />
+                    ) : (
+                      <EstadoBadge estado={caso.estado} />
+                    )}
+                  </TableCell>
+                  <TableCell className="text-sm font-medium text-(--navy-900)">
+                    {caso.clienteNombre}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell tabular-nums text-sm text-(--ink-600)">
+                    {caso.clienteRut}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell text-sm text-(--ink-600)">
+                    {caso.bancoNombre}
+                  </TableCell>
+                  <TableCell className="hidden md:table-cell tabular-nums text-sm text-(--ink-600)">
+                    {formatDate(caso.fechaDj)}
+                  </TableCell>
+                  <TableCell className="tabular-nums text-sm">
+                    {caso.numeroOt ? (
+                      <span className="font-display font-medium text-(--amber-500)">
+                        {caso.numeroOt}
+                      </span>
+                    ) : (
+                      <span className="text-muted-foreground">—</span>
+                    )}
+                  </TableCell>
+                </TableRow>
+              );
+            })}
           </TableBody>
         </Table>
         </div>
