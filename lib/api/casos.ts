@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion } from "./types";
+import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry } from "./types";
 
 interface ListarCasosResponse {
   casos: CasoListItem[];
@@ -121,6 +121,17 @@ export async function transicionarEstado(
     body: JSON.stringify({ estado, motivo_termino: motivoTermino }),
     token,
   });
+}
+
+export async function getHistorial(casoId: string, token: string): Promise<HistorialEntry[]> {
+  const raw = await apiClient.request<any>(`/v1/casos/${casoId}/historial`, { token });
+  return (raw.historial ?? []).map((e: any) => ({
+    id: e.id,
+    usuarioNombre: e.usuario_nombre,
+    estadoAnterior: e.estado_anterior,
+    estadoNuevo: e.estado_nuevo,
+    createdAt: e.created_at,
+  }));
 }
 
 export async function agregarOperacion(

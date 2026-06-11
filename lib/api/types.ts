@@ -95,6 +95,14 @@ export interface CrearCasoPayload {
   fechaDj: string;
 }
 
+export interface HistorialEntry {
+  id: string;
+  usuarioNombre: string;
+  estadoAnterior: string;
+  estadoNuevo: string;
+  createdAt: string;
+}
+
 export type Rol = "ADMIN" | "ABOGADO" | "TRAMITADOR";
 
 export interface Banco {

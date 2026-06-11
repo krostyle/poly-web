@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertCircle } from "lucide-react";
+import { AlertCircle, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import {
@@ -12,7 +12,9 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { EstadoBadge } from "./EstadoBadge";
+import { TransicionarEstadoDialog } from "./TransicionarEstadoDialog";
 import { useCaso } from "@/features/casos/hooks/useCaso";
+import { useHistorialCaso } from "@/features/casos/hooks/useHistorialCaso";
 
 interface CasoDetalleViewProps {
   id: string;
@@ -73,8 +75,19 @@ function DetailSkeleton() {
   );
 }
 
+function formatDateTime(iso: string): string {
+  return new Date(iso).toLocaleString("es-CL", {
+    day: "2-digit",
+    month: "2-digit",
+    year: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
+
 export function CasoDetalleView({ id }: CasoDetalleViewProps) {
   const { data, isLoading, isError, refetch } = useCaso(id);
+  const { data: historial } = useHistorialCaso(id);
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -120,6 +133,11 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
             </span>
           )}
           <EstadoBadge estado={caso.estado} />
+          <TransicionarEstadoDialog
+            casoId={caso.id}
+            estadoActual={caso.estado}
+            denunciaValida={caso.denunciaValida}
+          />
         </div>
       </div>
 
@@ -250,6 +268,36 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
           )}
         </CardContent>
       </Card>
+
+      {/* Historial de estados */}
+      {historial && historial.length > 0 && (
+        <Card className="rounded-xl border-border shadow-none">
+          <CardHeader className="pb-0">
+            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+              Historial de estados
+            </CardTitle>
+          </CardHeader>
+          <CardContent className="pt-3">
+            <ol className="space-y-3">
+              {historial.map((entry) => (
+                <li key={entry.id} className="flex items-center gap-3 text-sm flex-wrap">
+                  <span className="shrink-0 text-(--ink-600) tabular-nums text-xs">
+                    {formatDateTime(entry.createdAt)}
+                  </span>
+                  <span className="flex items-center gap-1.5">
+                    <EstadoBadge estado={entry.estadoAnterior as any} />
+                    <ArrowRight className="size-3.5 shrink-0 text-(--ink-600)" />
+                    <EstadoBadge estado={entry.estadoNuevo as any} />
+                  </span>
+                  <span className="ml-auto text-xs text-(--ink-600) shrink-0">
+                    {entry.usuarioNombre}
+                  </span>
+                </li>
+              ))}
+            </ol>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }
