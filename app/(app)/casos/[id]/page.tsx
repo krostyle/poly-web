@@ -1,4 +1,4 @@
-import Link from "next/link";
+import { BackLink } from "@/components/ui/back-link";
 import { CasoDetalleView } from "@/features/casos/components/CasoDetalleView";
 
 interface Props {
@@ -10,12 +10,7 @@ export default async function CasoDetallePage({ params }: Props) {
 
   return (
     <div className="space-y-6">
-      <Link
-        href="/casos"
-        className="text-sm text-(--ink-600) hover:text-(--navy-900) transition-colors"
-      >
-        ← Volver a casos
-      </Link>
+      <BackLink href="/casos">Volver a casos</BackLink>
       <CasoDetalleView id={id} />
     </div>
   );

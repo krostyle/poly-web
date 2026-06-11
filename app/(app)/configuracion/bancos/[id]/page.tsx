@@ -5,6 +5,7 @@ import Link from "next/link";
 import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Button } from "@/components/ui/button";
+import { BackLink } from "@/components/ui/back-link";
 import { EditarBancoDialog } from "@/features/bancos/components/EditarBancoDialog";
 import { UsuariosBancoTable } from "@/features/bancos/components/UsuariosBancoTable";
 import { useMe } from "@/features/auth/hooks/useMe";
@@ -87,12 +88,7 @@ export default function BancoDetallePage({ params }: { params: Promise<{ id: str
   return (
     <div className="space-y-6">
       {/* Back link */}
-      <Link
-        href="/configuracion/bancos"
-        className="inline-flex items-center text-sm text-(--ink-600) hover:text-(--navy-900) transition-colors"
-      >
-        ← Bancos
-      </Link>
+      <BackLink href="/configuracion/bancos">Bancos</BackLink>
 
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
