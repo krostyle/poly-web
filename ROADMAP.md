@@ -2,7 +2,7 @@
 
 ## Estado actual
 
-### Fase activa: 3 — Máquina de estados
+### Fase activa: 5 — Documentos
 
 ---
 
@@ -31,26 +31,27 @@
 - [x] poly-web: gestión de bancos y asignaciones usuario↔banco (SPEC-08)
 - [x] poly-web: diseño responsivo (sidebar drawer en móvil, tablas scrollables)
 
+### Fase 3 — Máquina de estados ✅
+
+- [x] poly-api: endpoint de transición + validación (denuncia válida para JUDICIALIZACION, motivo para TERMINADO)
+- [x] poly-web: controles de transición en la vista del caso (TransicionarEstadoDialog)
+- [x] poly-web: historial de cambios de estado (timeline en CasoDetalleView)
+- [x] Catálogo de bancos chilenos precargado en DB (migration 002)
+- [x] RUT formateado con puntos/guión en UI; almacenado sin puntos en DB
+- [x] DatePicker en formulario de caso (componente de diseño, nunca input nativo)
+
+### Fase 4 — Motor de plazos + semáforo ✅
+
+- [x] poly-api: PlazoRepository y FeriadoProvider (feriados chilenos 2025-2026)
+- [x] poly-api: creación automática de plazos al crear caso (ANALISIS_INTERNO, RESTITUCION, ASIGNACION)
+- [x] poly-api: creación de plazos en transiciones (SUSPENSION→PRECAUTELAR, JUDICIALIZACION→DEMANDA, RESTITUCION→RESTITUCION_RECHAZO+DEMANDA)
+- [x] poly-api: GET /{id}/plazos con semáforo calculado + POST cumplir
+- [x] poly-web: SemaforoIndicator (VERDE/AMARILLO/ROJO/VENCIDO)
+- [x] poly-web: PlazosCard en detalle de caso con acción "Marcar cumplido"
+
 ---
 
 ## Fases pendientes
-
-### Fase 3 — Máquina de estados 🔲
-
-**Objetivo:** Transicionar casos entre los 8 estados con validaciones de negocio.
-
-- [ ] poly-api: endpoint de transición + validación (denuncia válida para JUDICIALIZACION, motivo para TERMINADO)
-- [ ] poly-web: controles de transición en la vista del caso
-- **Spec:** `poly-api/specs/03-estados/`
-
-### Fase 4 — Motor de plazos + semáforo 🔲
-
-**Objetivo:** Calcular fechas límite en días hábiles y mostrar semáforo en tiempo real.
-
-- [ ] poly-api: creación automática de plazos al entrar a cada estado
-- [ ] poly-api: cron diario de recálculo
-- [ ] poly-web: semáforo visible en dashboard y vista de caso
-- **Spec:** `poly-api/specs/04-plazos/` · `poly-web/specs/04-plazos-ui/`
 
 ### Fase 5 — Documentos 🔲
 
