@@ -2,6 +2,7 @@
 import { useState, type FormEvent } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   Select,
   SelectContent,
@@ -13,6 +14,7 @@ import { AlertCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCrearCaso } from "@/features/casos/hooks/useCrearCaso";
 import { useBancos } from "@/features/casos/hooks/useBancos";
+import { formatRut, cleanRut } from "@/lib/utils/rut";
 
 interface CrearCasoFormProps {
   onSuccess?: (casoId: string) => void;
@@ -24,17 +26,21 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
   const { data: bancos, isLoading: loadingBancos, isError: bancosError, refetch: refetchBancos } = useBancos();
 
   const [bancoId, setBancoId] = useState("");
-  const [clienteRut, setClienteRut] = useState("");
+  const [clienteRutDisplay, setClienteRutDisplay] = useState("");
   const [clienteNombre, setClienteNombre] = useState("");
   const [clienteContacto, setClienteContacto] = useState("");
   const [fechaDj, setFechaDj] = useState("");
+
+  function handleRutChange(e: React.ChangeEvent<HTMLInputElement>) {
+    setClienteRutDisplay(formatRut(e.target.value));
+  }
 
   function handleSubmit(e: FormEvent) {
     e.preventDefault();
     mutate(
       {
         bancoId,
-        clienteRut,
+        clienteRut: cleanRut(clienteRutDisplay),
         clienteNombre,
         clienteContacto: clienteContacto || undefined,
         fechaDj,
@@ -73,7 +79,7 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
           <Select value={bancoId || undefined} onValueChange={(val) => setBancoId(val ?? "")}>
             <SelectTrigger id="banco" className="w-full">
               <SelectValue placeholder="Seleccionar banco">
-                {bancoId ? bancos?.find((b) => b.id === bancoId)?.nombre : undefined}
+                {bancoId ? bancos.find((b) => b.id === bancoId)?.nombre : undefined}
               </SelectValue>
             </SelectTrigger>
             <SelectContent>
@@ -101,23 +107,21 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
           <Input
             id="rut"
             placeholder="12.345.678-9"
-            value={clienteRut}
-            onChange={(e) => setClienteRut(e.target.value)}
+            value={clienteRutDisplay}
+            onChange={handleRutChange}
             required
             className="tabular-nums"
+            maxLength={12}
           />
         </div>
         <div className="space-y-1.5">
           <label htmlFor="fecha-dj" className="block text-sm font-medium text-(--ink-600)">
             Fecha DJ
           </label>
-          <Input
-            id="fecha-dj"
-            type="date"
+          <DatePicker
             value={fechaDj}
-            onChange={(e) => setFechaDj(e.target.value)}
-            required
-            className="tabular-nums"
+            onChange={setFechaDj}
+            toDate={new Date()}
           />
         </div>
       </div>
@@ -160,7 +164,11 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
             Cancelar
           </Button>
         )}
-        <Button type="submit" size="sm" disabled={isPending || !bancoId || !clienteRut || !clienteNombre || !fechaDj}>
+        <Button
+          type="submit"
+          size="sm"
+          disabled={isPending || !bancoId || !clienteRutDisplay || !clienteNombre || !fechaDj}
+        >
           {isPending ? "Creando…" : "Crear caso"}
         </Button>
       </div>

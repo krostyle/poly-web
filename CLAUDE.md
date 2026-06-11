@@ -331,6 +331,59 @@ function Field({ label, value }: { label: string; value: React.ReactNode }) {
 <SelectValue placeholder="Seleccionar banco" />
 ```
 
+### RUT chileno — formateo y almacenamiento
+
+**Display**: siempre con puntos y guión — `12.345.678-9`  
+**Storage** (lo que se envía a la API): sin puntos, con guión — `12345678-9`
+
+Usar las utilidades de `@/lib/utils/rut`:
+
+```tsx
+import { formatRut, cleanRut } from "@/lib/utils/rut";
+
+// En el input: formatear mientras el usuario escribe
+<Input
+  value={rutDisplay}
+  onChange={(e) => setRutDisplay(formatRut(e.target.value))}
+  className="tabular-nums"
+  maxLength={12}
+/>
+
+// En el submit: limpiar antes de enviar
+mutate({ clienteRut: cleanRut(rutDisplay), ... });
+```
+
+- ❌ Nunca guardar el RUT con puntos en la DB
+- ❌ Nunca mostrar el RUT sin formatear al usuario
+
+---
+
+### DatePicker — siempre el componente de diseño
+
+**Nunca usar `<input type="date">`** — siempre `<DatePicker>` de `@/components/ui/date-picker`.
+
+```tsx
+import { DatePicker } from "@/components/ui/date-picker";
+
+// value y onChange usan formato YYYY-MM-DD (lo que espera la API)
+// El componente muestra dd/MM/yyyy en español al usuario
+<DatePicker
+  value={fechaDj}       // string "2025-06-10" o ""
+  onChange={setFechaDj} // recibe string "2025-06-10"
+  toDate={new Date()}   // opcional — deshabilita fechas futuras
+/>
+```
+
+Props:
+
+| Prop | Tipo | Descripción |
+| --- | --- | --- |
+| `value` | `string` | `YYYY-MM-DD` o vacío |
+| `onChange` | `(v: string) => void` | recibe `YYYY-MM-DD` |
+| `toDate` | `Date` | deshabilita días posteriores a esta fecha |
+| `placeholder` | `string` | texto cuando no hay fecha seleccionada |
+| `disabled` | `boolean` | deshabilita el control completo |
+
 ---
 
 ### Responsive — reglas obligatorias
