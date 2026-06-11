@@ -14,7 +14,8 @@ const mainNav = [
 ];
 
 const adminNav = [
-  { href: "/configuracion/bancos", label: "Configuración" },
+  { href: "/configuracion/bancos", label: "Bancos" },
+  { href: "/configuracion/usuarios", label: "Usuarios" },
 ];
 
 interface SidebarProps {
@@ -27,8 +28,6 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const { organization } = useOrganization();
   const { data: me, isLoading: loadingMe } = useMe();
   const showAdmin = !loadingMe && me?.usuario.rol === "ADMIN";
-
-  const navItems = showAdmin ? [...mainNav, ...adminNav] : mainNav;
 
   return (
     <aside
@@ -61,7 +60,7 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
       </div>
 
       <nav className="flex-1 px-3 py-4 space-y-0.5">
-        {navItems.map((item) => {
+        {mainNav.map((item) => {
           const active = pathname === item.href || pathname.startsWith(item.href + "/");
           return (
             <Link
@@ -78,6 +77,31 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
             </Link>
           );
         })}
+
+        {showAdmin && (
+          <>
+            <p className="px-3 pt-4 pb-1 text-[10px] font-semibold tracking-widest text-white/30 uppercase">
+              Configuración
+            </p>
+            {adminNav.map((item) => {
+              const active = pathname === item.href || pathname.startsWith(item.href + "/");
+              return (
+                <Link
+                  key={item.href}
+                  href={item.href}
+                  onClick={onClose}
+                  className={`block rounded-md px-3 py-2 text-sm transition-colors ${
+                    active
+                      ? "bg-(--navy-700) text-white font-medium"
+                      : "text-white/70 hover:bg-(--navy-700) hover:text-white"
+                  }`}
+                >
+                  {item.label}
+                </Link>
+              );
+            })}
+          </>
+        )}
       </nav>
     </aside>
   );
