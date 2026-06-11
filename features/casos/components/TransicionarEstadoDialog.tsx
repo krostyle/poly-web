@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import { AlertTriangle, RotateCcw } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -24,6 +25,17 @@ const TRANSICIONES: Record<Estado, Estado[]> = {
   TERMINADO: [],
 };
 
+const TODOS_LOS_ESTADOS: Estado[] = [
+  "LLAMADA",
+  "REVISION",
+  "SUSPENSION",
+  "PRE_JUDICIALIZACION",
+  "RESTITUCION",
+  "JUDICIALIZACION",
+  "CIERRE",
+  "TERMINADO",
+];
+
 const ESTADO_LABELS: Record<Estado, string> = {
   LLAMADA: "Llamada",
   REVISION: "Revisión",
@@ -45,10 +57,10 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, denunciaValida 
   const [open, setOpen] = useState(false);
   const [selectedEstado, setSelectedEstado] = useState<Estado | null>(null);
   const [motivoTermino, setMotivoTermino] = useState("");
+  const [modoCorreccion, setModoCorreccion] = useState(false);
   const { mutate, isPending, error } = useTransicionarEstado(casoId);
 
   const siguientes = TRANSICIONES[estadoActual] ?? [];
-  if (siguientes.length === 0) return null;
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -57,12 +69,14 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, denunciaValida 
       {
         estado: selectedEstado,
         motivoTermino: selectedEstado === "TERMINADO" ? motivoTermino : undefined,
+        forzar: modoCorreccion,
       },
       {
         onSuccess: () => {
           setOpen(false);
           setSelectedEstado(null);
           setMotivoTermino("");
+          setModoCorreccion(false);
         },
       }
     );
@@ -72,9 +86,14 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, denunciaValida 
     if (!val) {
       setSelectedEstado(null);
       setMotivoTermino("");
+      setModoCorreccion(false);
     }
     setOpen(val);
   }
+
+  const opciones = modoCorreccion
+    ? TODOS_LOS_ESTADOS.filter((e) => e !== estadoActual)
+    : siguientes;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -83,36 +102,52 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, denunciaValida 
       </DialogTrigger>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle>Cambiar estado del caso</DialogTitle>
+          <DialogTitle>
+            {modoCorreccion ? "Corregir estado del caso" : "Cambiar estado del caso"}
+          </DialogTitle>
         </DialogHeader>
         <form onSubmit={handleSubmit} className="space-y-4 pt-1">
+
+          {modoCorreccion && (
+            <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+              <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+              <span>Modo corrección: puedes asignar cualquier estado independiente del flujo normal. Quedará registrado en la auditoría.</span>
+            </div>
+          )}
+
           <div className="space-y-2">
-            {siguientes.map((est) => {
-              const disabled = est === "JUDICIALIZACION" && !denunciaValida;
-              return (
-                <button
-                  key={est}
-                  type="button"
-                  disabled={disabled}
-                  onClick={() => !disabled && setSelectedEstado(est)}
-                  className={[
-                    "w-full rounded-lg border px-4 py-2.5 text-left text-sm transition-colors",
-                    disabled
-                      ? "cursor-not-allowed border-border bg-(--slate-100) text-muted-foreground"
-                      : selectedEstado === est
-                      ? "border-(--navy-900) bg-(--navy-900) text-white"
-                      : "border-border bg-(--paper) text-(--navy-900) hover:border-(--navy-700) hover:bg-(--slate-100)",
-                  ].join(" ")}
-                >
-                  <span className="font-medium">{ESTADO_LABELS[est]}</span>
-                  {disabled && (
-                    <span className="ml-2 text-xs text-muted-foreground">
-                      (requiere denuncia válida)
-                    </span>
-                  )}
-                </button>
-              );
-            })}
+            {opciones.length === 0 ? (
+              <p className="py-2 text-center text-sm text-(--ink-600)">
+                No hay transiciones disponibles.
+              </p>
+            ) : (
+              opciones.map((est) => {
+                const disabled = !modoCorreccion && est === "JUDICIALIZACION" && !denunciaValida;
+                return (
+                  <button
+                    key={est}
+                    type="button"
+                    disabled={disabled}
+                    onClick={() => !disabled && setSelectedEstado(est)}
+                    className={[
+                      "w-full rounded-lg border px-4 py-2.5 text-left text-sm transition-colors",
+                      disabled
+                        ? "cursor-not-allowed border-border bg-(--slate-100) text-muted-foreground"
+                        : selectedEstado === est
+                        ? "border-(--navy-900) bg-(--navy-900) text-white"
+                        : "border-border bg-(--paper) text-(--navy-900) hover:border-(--navy-700) hover:bg-(--slate-100)",
+                    ].join(" ")}
+                  >
+                    <span className="font-medium">{ESTADO_LABELS[est]}</span>
+                    {disabled && (
+                      <span className="ml-2 text-xs text-muted-foreground">
+                        (requiere denuncia válida)
+                      </span>
+                    )}
+                  </button>
+                );
+              })
+            )}
           </div>
 
           {selectedEstado === "TERMINADO" && (
@@ -137,27 +172,48 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, denunciaValida 
             </p>
           )}
 
-          <div className="flex justify-end gap-2 pt-1">
-            <Button
-              type="button"
-              variant="outline"
-              size="sm"
-              onClick={() => handleOpenChange(false)}
-              disabled={isPending}
-            >
-              Cancelar
-            </Button>
-            <Button
-              type="submit"
-              size="sm"
-              disabled={
-                isPending ||
-                !selectedEstado ||
-                (selectedEstado === "TERMINADO" && !motivoTermino.trim())
-              }
-            >
-              {isPending ? "Guardando…" : "Confirmar"}
-            </Button>
+          <div className="flex items-center justify-between gap-2 pt-1">
+            {!modoCorreccion && (
+              <button
+                type="button"
+                onClick={() => { setModoCorreccion(true); setSelectedEstado(null); }}
+                className="flex items-center gap-1 text-xs text-(--ink-600) underline underline-offset-2 hover:text-(--navy-900) transition-colors"
+              >
+                <RotateCcw className="size-3" />
+                Corregir estado
+              </button>
+            )}
+            {modoCorreccion && (
+              <button
+                type="button"
+                onClick={() => { setModoCorreccion(false); setSelectedEstado(null); }}
+                className="text-xs text-(--ink-600) underline underline-offset-2 hover:text-(--navy-900) transition-colors"
+              >
+                Cancelar corrección
+              </button>
+            )}
+            <div className="flex gap-2 ml-auto">
+              <Button
+                type="button"
+                variant="outline"
+                size="sm"
+                onClick={() => handleOpenChange(false)}
+                disabled={isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                type="submit"
+                size="sm"
+                disabled={
+                  isPending ||
+                  !selectedEstado ||
+                  (selectedEstado === "TERMINADO" && !motivoTermino.trim())
+                }
+              >
+                {isPending ? "Guardando…" : "Confirmar"}
+              </Button>
+            </div>
           </div>
         </form>
       </DialogContent>

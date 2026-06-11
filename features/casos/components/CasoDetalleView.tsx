@@ -1,5 +1,6 @@
 "use client";
 
+import { useState, useEffect } from "react";
 import { AlertCircle, ArrowRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -11,12 +12,21 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { EstadoBadge } from "./EstadoBadge";
 import { TransicionarEstadoDialog } from "./TransicionarEstadoDialog";
 import { PlazosCard } from "@/features/plazos/components/PlazosCard";
 import { DocumentosCard } from "@/features/documentos/components/DocumentosCard";
 import { useCaso } from "@/features/casos/hooks/useCaso";
 import { useHistorialCaso } from "@/features/casos/hooks/useHistorialCaso";
+import { useActualizarCaso } from "@/features/casos/hooks/useActualizarCaso";
+import { useUsuariosBanco } from "@/features/bancos/hooks/useUsuariosBanco";
 import type { HistorialEntry, Estado } from "@/lib/api/types";
 
 interface CasoDetalleViewProps {
@@ -144,9 +154,139 @@ function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
   }
 }
 
+// ── Editable Caso card ─────────────────────────────────────────────────────────
+
+interface CasoEditCardProps {
+  caso: import("@/lib/api/types").Caso;
+  onSave: (patch: {
+    abogadoId?: string;
+    numeroOt?: string;
+    denunciaValida?: boolean;
+    fechaDenuncia?: string;
+  }) => void;
+}
+
+function CasoEditCard({ caso, onSave }: CasoEditCardProps) {
+  const { data: usuarios } = useUsuariosBanco(caso.bancoId);
+  const [numeroOt, setNumeroOt] = useState(caso.numeroOt ?? "");
+  const [denunciaValida, setDenunciaValida] = useState(caso.denunciaValida);
+  const [fechaDenuncia, setFechaDenuncia] = useState(caso.fechaDenuncia ?? "");
+
+  // Sync if caso changes (e.g., after save)
+  useEffect(() => { setNumeroOt(caso.numeroOt ?? ""); }, [caso.numeroOt]);
+  useEffect(() => { setDenunciaValida(caso.denunciaValida); }, [caso.denunciaValida]);
+  useEffect(() => { setFechaDenuncia(caso.fechaDenuncia ?? ""); }, [caso.fechaDenuncia]);
+
+  const currentAbogadoId = caso.abogadoId ?? "";
+
+  return (
+    <Card className="rounded-xl border-border shadow-none">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+          Caso
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-3">
+        <dl>
+          {/* Abogado asignado */}
+          <div className="flex items-center justify-between py-2.5 border-b border-border">
+            <dt className="text-sm text-(--ink-600) shrink-0">Abogado</dt>
+            <dd className="ml-4 flex-1 max-w-[60%]">
+              <Select
+                value={currentAbogadoId}
+                onValueChange={(v) => onSave({ abogadoId: v || undefined })}
+              >
+                <SelectTrigger className="h-7 text-xs border-transparent hover:border-input focus:border-input bg-transparent hover:bg-(--slate-100) px-2">
+                  <SelectValue placeholder="Sin asignar" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="" className="text-xs text-muted-foreground">Sin asignar</SelectItem>
+                  {(usuarios ?? []).map((u) => (
+                    <SelectItem key={u.id} value={u.id} className="text-xs">
+                      {u.nombre}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </dd>
+          </div>
+
+          {/* Número OT */}
+          <div className="flex items-center justify-between py-2.5 border-b border-border">
+            <dt className="text-sm text-(--ink-600) shrink-0">N° OT</dt>
+            <dd className="ml-4 flex-1 max-w-[60%] flex justify-end">
+              <input
+                type="text"
+                value={numeroOt}
+                onChange={(e) => setNumeroOt(e.target.value)}
+                onBlur={() => {
+                  const val = numeroOt.trim();
+                  if (val !== (caso.numeroOt ?? "")) {
+                    onSave({ numeroOt: val || undefined });
+                  }
+                }}
+                placeholder="—"
+                className="w-full max-w-35 rounded border-transparent bg-transparent px-2 py-0.5 text-right text-sm font-medium font-display text-(--amber-500) placeholder:font-sans placeholder:text-muted-foreground outline-none hover:border hover:border-input focus:border focus:border-input focus:bg-(--slate-100)"
+              />
+            </dd>
+          </div>
+
+          {/* Denuncia válida */}
+          <div className="flex items-center justify-between py-2.5 border-b border-border">
+            <dt className="text-sm text-(--ink-600)">Denuncia válida</dt>
+            <dd className="text-sm font-medium text-(--navy-900)">
+              <label className="flex items-center gap-2 cursor-pointer">
+                <input
+                  type="checkbox"
+                  checked={denunciaValida}
+                  onChange={(e) => {
+                    setDenunciaValida(e.target.checked);
+                    onSave({ denunciaValida: e.target.checked });
+                  }}
+                  className="size-4 rounded accent-current"
+                />
+                {denunciaValida ? "Sí" : "No"}
+              </label>
+            </dd>
+          </div>
+
+          {/* Fecha denuncia */}
+          <div className="flex items-center justify-between py-2.5 border-b border-border">
+            <dt className="text-sm text-(--ink-600)">Fecha denuncia</dt>
+            <dd className="ml-4 flex-1 max-w-[60%] flex justify-end">
+              <input
+                type="date"
+                value={fechaDenuncia}
+                onChange={(e) => {
+                  setFechaDenuncia(e.target.value);
+                  if (e.target.value) onSave({ fechaDenuncia: e.target.value });
+                }}
+                className="rounded border-transparent bg-transparent px-2 py-0.5 text-right text-sm tabular-nums text-(--navy-900) outline-none hover:border hover:border-input focus:border focus:border-input focus:bg-(--slate-100)"
+              />
+            </dd>
+          </div>
+
+          <Field
+            label="Fecha DJ"
+            value={<span className="tabular-nums">{formatDate(caso.fechaDj)}</span>}
+          />
+          {caso.motivoTermino && (
+            <Field label="Motivo término" value={caso.motivoTermino} />
+          )}
+          <Field
+            label="Registrado"
+            value={<span className="tabular-nums">{formatDate(caso.createdAt)}</span>}
+          />
+        </dl>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function CasoDetalleView({ id }: CasoDetalleViewProps) {
   const { data, isLoading, isError, refetch } = useCaso(id);
   const { data: historial } = useHistorialCaso(id);
+  const actualizar = useActualizarCaso(id);
 
   if (isLoading) return <DetailSkeleton />;
 
@@ -202,36 +342,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
       {/* Cards de detalle */}
       <div className="grid gap-4 md:grid-cols-2">
-        <Card className="rounded-xl border-border shadow-none">
-          <CardHeader className="pb-0">
-            <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
-              Caso
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="pt-3">
-            <dl>
-              <Field
-                label="Fecha DJ"
-                value={<span className="tabular-nums">{formatDate(caso.fechaDj)}</span>}
-              />
-              <Field
-                label="Fecha denuncia"
-                value={<span className="tabular-nums">{formatDate(caso.fechaDenuncia)}</span>}
-              />
-              <Field
-                label="Denuncia válida"
-                value={caso.denunciaValida ? "Sí" : "No"}
-              />
-              {caso.motivoTermino && (
-                <Field label="Motivo término" value={caso.motivoTermino} />
-              )}
-              <Field
-                label="Registrado"
-                value={<span className="tabular-nums">{formatDate(caso.createdAt)}</span>}
-              />
-            </dl>
-          </CardContent>
-        </Card>
+        <CasoEditCard caso={caso} onSave={(patch) => actualizar.mutate(patch)} />
 
         <Card className="rounded-xl border-border shadow-none">
           <CardHeader className="pb-0">

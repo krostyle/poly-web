@@ -9,12 +9,14 @@ export function useTransicionarEstado(casoId: string) {
     mutationFn: async ({
       estado,
       motivoTermino,
+      forzar,
     }: {
       estado: string;
       motivoTermino?: string;
+      forzar?: boolean;
     }) => {
       const token = await getToken();
-      return transicionarEstado(casoId, estado, motivoTermino, token!);
+      return transicionarEstado(casoId, estado, motivoTermino, token!, forzar);
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["casos", casoId] });

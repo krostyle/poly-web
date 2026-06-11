@@ -202,11 +202,12 @@ export async function transicionarEstado(
   id: string,
   estado: string,
   motivoTermino: string | undefined,
-  token: string
+  token: string,
+  forzar?: boolean
 ): Promise<void> {
   return apiClient.request<void>(`/v1/casos/${id}/transicion`, {
     method: "POST",
-    body: JSON.stringify({ estado, motivo_termino: motivoTermino }),
+    body: JSON.stringify({ estado, motivo_termino: motivoTermino, forzar: forzar ?? false }),
     token,
   });
 }
