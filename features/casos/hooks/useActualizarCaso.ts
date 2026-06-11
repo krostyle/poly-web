@@ -12,6 +12,7 @@ export function useActualizarCaso(casoId: string) {
       numeroOt?: string;
       denunciaValida?: boolean;
       fechaDenuncia?: string;
+      fechaDj?: string;
     }) => {
       const token = await getToken();
       return actualizarCaso(casoId, patch, token ?? "");

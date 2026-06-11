@@ -13,7 +13,7 @@ interface RawCasoListItem {
   abogado_id: string | null;
   numero_ot: string | null;
   estado: Estado;
-  fecha_dj: string;
+  fecha_dj: string | null;
   denuncia_valida: boolean;
   created_at: string;
 }
@@ -36,7 +36,7 @@ interface RawCaso {
   abogado_id: string | null;
   numero_ot: string | null;
   estado: Estado;
-  fecha_dj: string;
+  fecha_dj: string | null;
   fecha_denuncia: string | null;
   denuncia_valida: boolean;
   motivo_termino: string | null;
@@ -85,7 +85,7 @@ function mapCasoListItem(raw: RawCasoListItem): CasoListItem {
     abogadoId: raw.abogado_id ?? undefined,
     numeroOt: raw.numero_ot ?? undefined,
     estado: raw.estado,
-    fechaDj: raw.fecha_dj,
+    fechaDj: raw.fecha_dj ?? undefined,
     denunciaValida: raw.denuncia_valida,
     createdAt: raw.created_at,
   };
@@ -101,7 +101,7 @@ function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
       abogadoId: raw.caso.abogado_id ?? undefined,
       numeroOt: raw.caso.numero_ot ?? undefined,
       estado: raw.caso.estado,
-      fechaDj: raw.caso.fecha_dj,
+      fechaDj: raw.caso.fecha_dj ?? undefined,
       fechaDenuncia: raw.caso.fecha_denuncia ?? undefined,
       denunciaValida: raw.caso.denuncia_valida,
       motivoTermino: (raw.caso.motivo_termino ?? undefined) as import("./types").MotivoTermino | undefined,
@@ -162,13 +162,13 @@ export async function obtenerCasoDetalle(id: string, token: string): Promise<Cas
 }
 
 export async function crearCaso(payload: CrearCasoPayload, token: string): Promise<CasoDetalle> {
-  const body = {
+  const body: Record<string, unknown> = {
     banco_id: payload.bancoId,
     cliente_rut: payload.clienteRut,
     cliente_nombre: payload.clienteNombre,
     cliente_contacto: payload.clienteContacto,
-    fecha_dj: payload.fechaDj,
   };
+  if (payload.fechaDj) body.fecha_dj = payload.fechaDj;
   const raw = await apiClient.request<RawCasoDetalle>("/v1/casos", {
     method: "POST",
     body: JSON.stringify(body),
@@ -184,6 +184,7 @@ export async function actualizarCaso(
     numeroOt?: string;
     denunciaValida?: boolean;
     fechaDenuncia?: string;
+    fechaDj?: string;
   },
   token: string
 ): Promise<CasoDetalle> {
@@ -192,6 +193,7 @@ export async function actualizarCaso(
   if (patch.numeroOt !== undefined) body.numero_ot = patch.numeroOt;
   if (patch.denunciaValida !== undefined) body.denuncia_valida = patch.denunciaValida;
   if (patch.fechaDenuncia !== undefined) body.fecha_denuncia = patch.fechaDenuncia;
+  if (patch.fechaDj !== undefined) body.fecha_dj = patch.fechaDj;
   const raw = await apiClient.request<RawCasoDetalle>(`/v1/casos/${id}`, {
     method: "PATCH",
     body: JSON.stringify(body),

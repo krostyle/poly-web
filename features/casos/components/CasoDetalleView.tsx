@@ -58,7 +58,7 @@ const RELACION_LABELS: Record<string, string> = {
   TERCERO: "Tercero",
 };
 
-function formatDate(iso: string | undefined): string {
+function formatDate(iso: string | undefined | null): string {
   if (!iso) return "—";
   return new Date(iso).toLocaleDateString("es-CL", {
     day: "2-digit",
@@ -210,6 +210,7 @@ interface EditState {
   numeroOt: string;
   denunciaValida: boolean;
   fechaDenuncia: string;
+  fechaDj: string;
 }
 
 function CasoEditCard({ caso }: { caso: Caso }) {
@@ -222,9 +223,10 @@ function CasoEditCard({ caso }: { caso: Caso }) {
       numeroOt: caso.numeroOt ?? "",
       denunciaValida: caso.denunciaValida,
       fechaDenuncia: caso.fechaDenuncia ?? "",
+      fechaDj: caso.fechaDj ?? "",
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [caso.abogadoId, caso.numeroOt, caso.denunciaValida, caso.fechaDenuncia]
+    [caso.abogadoId, caso.numeroOt, caso.denunciaValida, caso.fechaDenuncia, caso.fechaDj]
   );
 
   const [current, setCurrent] = useState<EditState>(original);
@@ -242,7 +244,8 @@ function CasoEditCard({ caso }: { caso: Caso }) {
     current.abogadoId !== original.abogadoId ||
     current.numeroOt !== original.numeroOt ||
     current.denunciaValida !== original.denunciaValida ||
-    current.fechaDenuncia !== original.fechaDenuncia;
+    current.fechaDenuncia !== original.fechaDenuncia ||
+    current.fechaDj !== original.fechaDj;
 
   function handleSave() {
     const patch: {
@@ -250,6 +253,7 @@ function CasoEditCard({ caso }: { caso: Caso }) {
       numeroOt?: string;
       denunciaValida?: boolean;
       fechaDenuncia?: string;
+      fechaDj?: string;
     } = {};
     if (current.abogadoId !== original.abogadoId)
       patch.abogadoId = current.abogadoId || undefined;
@@ -259,6 +263,8 @@ function CasoEditCard({ caso }: { caso: Caso }) {
       patch.denunciaValida = current.denunciaValida;
     if (current.fechaDenuncia !== original.fechaDenuncia)
       patch.fechaDenuncia = current.fechaDenuncia || undefined;
+    if (current.fechaDj !== original.fechaDj)
+      patch.fechaDj = current.fechaDj || undefined;
     mutate(patch);
   }
 
@@ -339,6 +345,20 @@ function CasoEditCard({ caso }: { caso: Caso }) {
               </dd>
             </div>
 
+            {/* Fecha DJ */}
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha DJ</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <DatePicker
+                  value={current.fechaDj || undefined}
+                  onChange={(v) => set("fechaDj", v)}
+                  placeholder="Sin fecha"
+                  toDate={new Date()}
+                  className="h-8 w-full max-w-44 text-sm border-transparent hover:border-input bg-transparent hover:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+
             {/* Fecha denuncia */}
             <div className="flex items-center justify-between py-2.5 border-b border-border">
               <dt className="text-sm text-(--ink-600) shrink-0">Fecha denuncia</dt>
@@ -351,11 +371,6 @@ function CasoEditCard({ caso }: { caso: Caso }) {
                 />
               </dd>
             </div>
-
-            <Field
-              label="Fecha DJ"
-              value={<span className="tabular-nums">{formatDate(caso.fechaDj)}</span>}
-            />
             {caso.motivoTermino && (
               <Field label="Motivo término" value={caso.motivoTermino} />
             )}

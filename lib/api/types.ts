@@ -46,7 +46,7 @@ export interface Caso {
   abogadoId?: string;
   numeroOt?: string;
   estado: Estado;
-  fechaDj: string; // ISO date
+  fechaDj?: string; // ISO date — optional, may be registered later
   fechaDenuncia?: string;
   denunciaValida: boolean;
   motivoTermino?: MotivoTermino;
@@ -87,7 +87,7 @@ export interface CasoListItem {
   abogadoId?: string;
   numeroOt?: string;
   estado: Estado;
-  fechaDj: string;
+  fechaDj?: string;
   denunciaValida: boolean;
   createdAt: string;
 }
@@ -110,7 +110,7 @@ export interface CrearCasoPayload {
   clienteRut: string;
   clienteNombre: string;
   clienteContacto?: string;
-  fechaDj: string;
+  fechaDj?: string;
 }
 
 export interface HistorialEntry {

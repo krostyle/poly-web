@@ -169,7 +169,7 @@ export function CasosTable({ filters }: { filters?: CasoFilters }) {
                     {caso.bancoNombre}
                   </TableCell>
                   <TableCell className="hidden md:table-cell tabular-nums text-sm text-(--ink-600)">
-                    {formatDate(caso.fechaDj)}
+                    {caso.fechaDj ? formatDate(caso.fechaDj) : "—"}
                   </TableCell>
                   <TableCell className="tabular-nums text-sm">
                     {caso.numeroOt ? (
