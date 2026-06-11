@@ -87,7 +87,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
         <div>
           <p className="text-sm font-medium text-(--navy-900)">No se pudo cargar el caso</p>
           <p className="mt-0.5 text-xs text-(--ink-600)">
-            Verificá tu conexión e intentá nuevamente.
+            Verifica tu conexión e intenta nuevamente.
           </p>
         </div>
         <button

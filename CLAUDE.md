@@ -207,7 +207,7 @@ function ErrorState({ onRetry }: { onRetry?: () => void }) {
       <div>
         <p className="text-sm font-medium text-(--navy-900)">No se pudieron cargar los datos</p>
         <p className="mt-0.5 text-xs text-(--ink-600)">
-          Verificá tu conexión e intentá nuevamente.
+          Verifica tu conexión e intenta nuevamente.
         </p>
       </div>
       {onRetry && (

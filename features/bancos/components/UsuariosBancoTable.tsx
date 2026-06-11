@@ -67,7 +67,7 @@ export function UsuariosBancoTable({ bancoId }: UsuariosBancoTableProps) {
             </div>
             <div>
               <p className="text-sm font-medium text-(--navy-900)">No se pudieron cargar los usuarios</p>
-              <p className="mt-0.5 text-xs text-(--ink-600)">Verificá tu conexión e intentá nuevamente.</p>
+              <p className="mt-0.5 text-xs text-(--ink-600)">Verifica tu conexión e intenta nuevamente.</p>
             </div>
             <button
               onClick={() => refetch()}

@@ -78,7 +78,7 @@ export default function BancoDetallePage({ params }: { params: Promise<{ id: str
         setDeleteError(
           err.message.includes("409") || err.message.toLowerCase().includes("casos")
             ? "Este banco tiene casos asociados y no puede eliminarse."
-            : "No se pudo eliminar el banco. Intentá nuevamente."
+            : "No se pudo eliminar el banco. Intenta nuevamente."
         );
       },
     });

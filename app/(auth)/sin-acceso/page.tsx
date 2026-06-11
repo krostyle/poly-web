@@ -6,10 +6,10 @@ export default function SinAccesoPage() {
       </p>
       <p className="text-sm text-gray-500 leading-relaxed">
         Tu cuenta no está asociada a ningún estudio jurídico.
-        Si recibiste una invitación, revisá tu correo y aceptá el acceso desde ahí.
+        Si recibiste una invitación, revisa tu correo y acepta el acceso desde ahí.
       </p>
       <p className="text-xs text-gray-400">
-        ¿Necesitás acceso? Contactá al equipo de Poly.
+        ¿Necesitas acceso? Contacta al equipo de Poly.
       </p>
     </div>
   );

@@ -56,7 +56,7 @@ export function CasosTable() {
               No se pudieron cargar los casos
             </p>
             <p className="mt-0.5 text-xs text-(--ink-600)">
-              Verificá tu conexión e intentá nuevamente.
+              Verifica tu conexión e intenta nuevamente.
             </p>
           </div>
           <button
