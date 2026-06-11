@@ -17,6 +17,11 @@ function mapUsuarioBanco(r: RawUser): UsuarioBanco {
   };
 }
 
+export async function listarCatalogoBancos(token: string): Promise<string[]> {
+  const res = await apiClient.request<{ bancos: string[] }>("/v1/bancos/catalogo", { token });
+  return res.bancos ?? [];
+}
+
 export async function listarBancos(token: string): Promise<Banco[]> {
   const res = await apiClient.request<{ bancos: RawBanco[] }>("/v1/bancos", { token });
   return (res.bancos ?? []).map(mapBanco);
