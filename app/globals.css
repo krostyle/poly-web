@@ -156,10 +156,12 @@
   .tabular-nums {
     font-variant-numeric: tabular-nums;
   }
-  /* Prevent iOS auto-zoom on input focus (triggered when font-size < 16px) */
-  @media (max-width: 768px) {
-    input, select, textarea {
-      font-size: 16px;
-    }
+}
+
+/* Fuera de @layer para que no lo pisen las utilidades de Tailwind.
+   iOS Safari hace zoom automático en inputs con font-size < 16px. */
+@media (max-width: 768px) {
+  input, select, textarea, [role="combobox"] {
+    font-size: 16px !important;
   }
 }
