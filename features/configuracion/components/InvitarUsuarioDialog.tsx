@@ -72,11 +72,9 @@ export function InvitarUsuarioDialog() {
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
-      <DialogTrigger asChild>
-        <Button size="sm" className="gap-1.5">
-          <UserPlus className="size-4" />
-          Invitar usuario
-        </Button>
+      <DialogTrigger render={<Button size="sm" className="gap-1.5" />}>
+        <UserPlus className="size-4" />
+        Invitar usuario
       </DialogTrigger>
 
       <DialogContent className="sm:max-w-md">
