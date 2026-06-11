@@ -158,10 +158,16 @@
   }
 }
 
-/* Fuera de @layer para que no lo pisen las utilidades de Tailwind.
-   iOS Safari hace zoom automático en inputs con font-size < 16px. */
-@media (max-width: 768px) {
-  input, select, textarea, [role="combobox"] {
-    font-size: 16px !important;
-  }
+/* Browsers (iOS Safari, Chrome Android) auto-zoom when a focused input has
+   font-size < 16px. Unlayered + !important ensures Tailwind utilities can't
+   override it. No media query — 16px vs 14px is imperceptible on desktop. */
+input[type="text"],
+input[type="email"],
+input[type="password"],
+input[type="number"],
+input[type="search"],
+input[type="tel"],
+input[type="url"],
+textarea {
+  font-size: max(1rem, 1em) !important;
 }
