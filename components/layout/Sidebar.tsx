@@ -2,10 +2,13 @@
 
 import Link from "next/link";
 import { X } from "lucide-react";
+import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { useOrganization } from "@clerk/nextjs";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { Skeleton } from "@/components/ui/skeleton";
+
+const ADMIN_CACHE_KEY = "poly:isAdmin";
 
 const mainNav = [
   { href: "/dashboard", label: "Dashboard" },
@@ -27,7 +30,23 @@ export function Sidebar({ isOpen = false, onClose }: SidebarProps) {
   const pathname = usePathname();
   const { organization } = useOrganization();
   const { data: me, isLoading: loadingMe } = useMe();
-  const showAdmin = !loadingMe && me?.usuario.rol === "ADMIN";
+
+  // Seed from localStorage so returning admins see the nav instantly on reload.
+  const [cachedAdmin] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem(ADMIN_CACHE_KEY) === "1";
+  });
+
+  // Keep localStorage in sync when me resolves.
+  useEffect(() => {
+    if (!loadingMe && me) {
+      localStorage.setItem(ADMIN_CACHE_KEY, me.usuario.rol === "ADMIN" ? "1" : "0");
+    }
+  }, [loadingMe, me]);
+
+  // While loading: trust the cache (avoids flash for returning admins).
+  // Once resolved: trust the server (prevents flash for non-admins).
+  const showAdmin = loadingMe ? cachedAdmin : me?.usuario.rol === "ADMIN";
 
   return (
     <aside
