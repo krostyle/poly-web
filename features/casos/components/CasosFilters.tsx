@@ -16,7 +16,6 @@ import type { Estado } from "@/lib/api/types";
 
 const ESTADOS: { value: Estado; label: string }[] = [
   { value: "INGRESO",           label: "Ingreso" },
-  { value: "REVISION",          label: "Revisión" },
   { value: "PREJUDICIAL",       label: "Medida Precautoria" },
   { value: "PAGO_NORMATIVO",    label: "Pago Normativo" },
   { value: "JUDICIAL",          label: "Demanda" },

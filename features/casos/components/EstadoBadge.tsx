@@ -3,7 +3,6 @@ import type { Estado } from "@/lib/api/types";
 
 export const ESTADO_LABELS: Record<Estado, string> = {
   INGRESO:          "Ingreso",
-  REVISION:         "Revisión",
   PREJUDICIAL:      "Medida Precautoria",
   PAGO_NORMATIVO:   "Pago Normativo",
   JUDICIAL:         "Demanda",
@@ -23,7 +22,6 @@ export const ESTADO_LABELS: Record<Estado, string> = {
 // End states      → rojo (terminado) / slate (cierre)
 const ESTADO_CLASSES: Record<Estado, string> = {
   INGRESO:          "bg-(--slate-100) text-(--ink-600)",
-  REVISION:         "bg-(--navy-900)/10 text-(--navy-900)",
   PREJUDICIAL:      "bg-(--amber-500)/15 text-(--amber-500)",
   PAGO_NORMATIVO:   "bg-(--verde)/15 text-(--verde)",
   JUDICIAL:         "bg-(--navy-900)/15 text-(--navy-900)",

@@ -48,7 +48,7 @@ export interface Caso {
   abogadoId?: string;
   numeroOt?: string;
   estado: Estado;
-  fechaDj?: string; // ISO date — optional, may be registered later
+  fechaDj: string; // ISO date — obligatoria
   fechaDenuncia?: string;
   estadoDenuncia: EstadoDenuncia;
   motivoTermino?: MotivoTermino;
@@ -89,7 +89,7 @@ export interface CasoListItem {
   abogadoId?: string;
   numeroOt?: string;
   estado: Estado;
-  fechaDj?: string;
+  fechaDj: string; // obligatoria
   estadoDenuncia: EstadoDenuncia;
   createdAt: string;
 }

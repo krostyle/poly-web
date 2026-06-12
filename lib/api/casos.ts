@@ -85,7 +85,7 @@ function mapCasoListItem(raw: RawCasoListItem): CasoListItem {
     abogadoId: raw.abogado_id ?? undefined,
     numeroOt: raw.numero_ot ?? undefined,
     estado: raw.estado,
-    fechaDj: raw.fecha_dj ?? undefined,
+    fechaDj: raw.fecha_dj!,
     estadoDenuncia: raw.estado_denuncia,
     createdAt: raw.created_at,
   };
@@ -101,7 +101,7 @@ function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
       abogadoId: raw.caso.abogado_id ?? undefined,
       numeroOt: raw.caso.numero_ot ?? undefined,
       estado: raw.caso.estado,
-      fechaDj: raw.caso.fecha_dj ?? undefined,
+      fechaDj: raw.caso.fecha_dj!,
       fechaDenuncia: raw.caso.fecha_denuncia ?? undefined,
       estadoDenuncia: raw.caso.estado_denuncia,
       motivoTermino: (raw.caso.motivo_termino ?? undefined) as import("./types").MotivoTermino | undefined,

@@ -342,13 +342,15 @@ function CasoEditCard({
             <Field label="Denuncia banco" value={ESTADO_DENUNCIA_LABELS[current.estadoDenuncia]} />
           )}
 
-          {/* Fecha DJ — editable for all roles */}
+          {/* Fecha DJ — editable for all roles, obligatoria */}
           <div className="flex items-center justify-between py-2.5 border-b border-border">
-            <dt className="text-sm text-(--ink-600) shrink-0">Fecha DJ</dt>
+            <dt className="text-sm text-(--ink-600) shrink-0">
+              Fecha DJ <span className="text-destructive">*</span>
+            </dt>
             <dd className="ml-3 min-w-0 flex-1 flex justify-end">
               <DatePicker
                 value={current.fechaDj || undefined}
-                onChange={(v) => onChange("fechaDj", v)}
+                onChange={(v) => { if (v) onChange("fechaDj", v); }}
                 placeholder="Sin fecha"
                 toDate={new Date()}
                 className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
