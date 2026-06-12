@@ -19,8 +19,15 @@ async function request<T>(
   const res = await fetch(`${BASE_URL}${path}`, { ...init, headers });
 
   if (!res.ok) {
-    const text = await res.text().catch(() => res.statusText);
-    throw new Error(`API ${res.status}: ${text}`);
+    let message = res.statusText;
+    try {
+      const body = await res.clone().json() as Record<string, unknown>;
+      if (typeof body?.error === "string") message = body.error;
+      else message = await res.text();
+    } catch {
+      message = await res.text().catch(() => res.statusText);
+    }
+    throw new Error(message);
   }
 
   if (res.status === 204) return undefined as T;
