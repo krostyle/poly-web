@@ -151,8 +151,39 @@ function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
         </span>
       );
 
-    case "CASO_ACTUALIZADO":
-      return <span className="text-(--navy-900)">Caso actualizado</span>;
+    case "CASO_ACTUALIZADO": {
+      const cambios = d.cambios as Record<string, string | null> | undefined;
+      const CAMPO_LABELS: Record<string, string> = {
+        abogado:         "Abogado",
+        numero_ot:       "N° OT",
+        estado_denuncia: "Denuncia banco",
+        fecha_denuncia:  "Fecha denuncia",
+        fecha_dj:        "Fecha DJ",
+        numero_rol:      "N° Rol",
+        tribunal:        "Tribunal",
+        region:          "Región",
+      };
+      const DENUNCIA_LABELS: Record<string, string> = {
+        PENDIENTE: "Pendiente", ACOGIDA: "Acogida", RECHAZADA: "Rechazada",
+      };
+      const items = cambios
+        ? Object.entries(cambios).map(([k, v]) => {
+            const label = CAMPO_LABELS[k] ?? k;
+            if (v === null || v === "") return `${label} eliminado`;
+            if (k === "estado_denuncia") return `${label} → ${DENUNCIA_LABELS[v] ?? v}`;
+            if (k === "abogado") return label; // ID, no mostramos UUID
+            return `${label} → ${v}`;
+          })
+        : [];
+      return (
+        <span className="text-(--navy-900)">
+          Caso actualizado
+          {items.length > 0 && (
+            <span className="ml-1 text-(--ink-600)">— {items.join(", ")}</span>
+          )}
+        </span>
+      );
+    }
 
     case "OPERACION_AGREGADA":
       return (
