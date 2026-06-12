@@ -2,7 +2,6 @@
 
 export type Estado =
   | "INGRESO"
-  | "REVISION"
   | "PREJUDICIAL"
   | "PAGO_NORMATIVO"
   | "JUDICIAL"
@@ -113,7 +112,7 @@ export interface CrearCasoPayload {
   clienteRut: string;
   clienteNombre: string;
   clienteContacto?: string;
-  fechaDj?: string;
+  fechaDj: string; // obligatoria
 }
 
 export interface HistorialEntry {

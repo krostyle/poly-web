@@ -22,8 +22,7 @@ import { useTransicionarEstado } from "@/features/casos/hooks/useTransicionarEst
 
 // ── Transiciones válidas (mirror del backend) ────────────────────────────────
 const TRANSICIONES: Record<Estado, Estado[]> = {
-  INGRESO:          ["REVISION", "TERMINADO"],
-  REVISION:         ["PREJUDICIAL", "TERMINADO"],
+  INGRESO:          ["PREJUDICIAL", "TERMINADO"],
   PREJUDICIAL:      ["PAGO_NORMATIVO", "JUDICIAL", "TERMINADO"],
   PAGO_NORMATIVO:   ["JUDICIAL", "TERMINADO"],
   JUDICIAL:         ["AUDIENCIA", "TERMINADO"],
@@ -38,7 +37,6 @@ const TRANSICIONES: Record<Estado, Estado[]> = {
 
 // ── Descripciones de cada estado (ayuda contextual en el dialog) ─────────────
 const ESTADO_DESC: Partial<Record<Estado, string>> = {
-  REVISION:          "Banco revisa si la denuncia es válida",
   PREJUDICIAL:       "Medida precautoria solicitada al tribunal",
   PAGO_NORMATIVO:    "Tribunal acoge MP · ordena restituir abono normativo",
   JUDICIAL:          "Demanda presentada · plazo 10 días hábiles desde notificación",
@@ -53,7 +51,7 @@ const ESTADO_DESC: Partial<Record<Estado, string>> = {
 
 // ── Grupos visuales para el modo corrección ──────────────────────────────────
 const FASES = [
-  { label: "Ingreso",     estados: ["INGRESO", "REVISION"] as Estado[] },
+  { label: "Ingreso",     estados: ["INGRESO"] as Estado[] },
   { label: "Prejudicial", estados: ["PREJUDICIAL", "PAGO_NORMATIVO"] as Estado[] },
   { label: "Judicial",    estados: ["JUDICIAL", "AUDIENCIA", "SENTENCIA", "APELACION", "SENTENCIA_SEGUNDA", "CUMPLIMIENTO"] as Estado[] },
   { label: "Término",     estados: ["TERMINADO", "CIERRE"] as Estado[] },

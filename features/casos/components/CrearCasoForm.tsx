@@ -117,8 +117,7 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
         </div>
         <div className="space-y-1.5">
           <label htmlFor="fecha-dj" className="block text-sm font-medium text-(--ink-600)">
-            Fecha DJ{" "}
-            <span className="font-normal text-xs text-muted-foreground">(opcional)</span>
+            Fecha DJ <span className="text-destructive">*</span>
           </label>
           <DatePicker
             value={fechaDj}
@@ -169,7 +168,7 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
         <Button
           type="submit"
           size="sm"
-          disabled={isPending || !bancoId || !clienteRutDisplay || !clienteNombre}
+          disabled={isPending || !bancoId || !clienteRutDisplay || !clienteNombre || !fechaDj}
         >
           {isPending && <Loader2 className="size-3.5 animate-spin" />}
           {isPending ? "Creando…" : "Crear caso"}
