@@ -94,6 +94,7 @@ export interface CasoListItem {
   estado: Estado;
   fechaDj: string; // obligatoria
   estadoDenuncia: EstadoDenuncia;
+  totalCLP: number;
   createdAt: string;
 }
 

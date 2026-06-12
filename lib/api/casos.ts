@@ -15,6 +15,7 @@ interface RawCasoListItem {
   estado: Estado;
   fecha_dj: string | null;
   estado_denuncia: EstadoDenuncia;
+  total_clp: number;
   created_at: string;
 }
 
@@ -90,6 +91,7 @@ function mapCasoListItem(raw: RawCasoListItem): CasoListItem {
     estado: raw.estado,
     fechaDj: raw.fecha_dj!,
     estadoDenuncia: raw.estado_denuncia,
+    totalCLP: raw.total_clp,
     createdAt: raw.created_at,
   };
 }

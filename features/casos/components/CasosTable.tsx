@@ -26,6 +26,15 @@ function formatDate(iso: string): string {
   });
 }
 
+function formatMontoCLP(monto: number): string {
+  if (monto === 0) return "—";
+  return new Intl.NumberFormat("es-CL", {
+    style: "currency",
+    currency: "CLP",
+    maximumFractionDigits: 0,
+  }).format(monto);
+}
+
 function TableSkeleton() {
   return (
     <div className="divide-y divide-border">
@@ -130,6 +139,9 @@ export function CasosTable({ filters }: { filters?: CasoFilters }) {
               <TableHead className="hidden md:table-cell text-xs font-semibold uppercase tracking-wide text-(--ink-600) tabular-nums">
                 Fecha DJ
               </TableHead>
+              <TableHead className="hidden lg:table-cell text-xs font-semibold uppercase tracking-wide text-(--ink-600) text-right">
+                Monto
+              </TableHead>
               <TableHead className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
                 N° OT
               </TableHead>
@@ -170,6 +182,9 @@ export function CasosTable({ filters }: { filters?: CasoFilters }) {
                   </TableCell>
                   <TableCell className="hidden md:table-cell tabular-nums text-sm text-(--ink-600)">
                     {caso.fechaDj ? formatDate(caso.fechaDj) : "—"}
+                  </TableCell>
+                  <TableCell className="hidden lg:table-cell tabular-nums text-sm font-medium text-(--navy-900) text-right">
+                    {formatMontoCLP(caso.totalCLP)}
                   </TableCell>
                   <TableCell className="tabular-nums text-sm">
                     {caso.numeroOt ? (

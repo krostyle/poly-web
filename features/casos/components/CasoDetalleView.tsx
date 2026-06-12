@@ -733,6 +733,11 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
             {cliente.nombre}
           </h1>
           <p className="mt-0.5 text-sm tabular-nums text-(--ink-600)">{cliente.rut}</p>
+          {totalCLP > 0 && (
+            <p className="mt-1 text-sm font-semibold tabular-nums text-(--navy-900)">
+              {formatMontoCLP(totalCLP)}
+            </p>
+          )}
         </div>
         <div className="flex items-center gap-2.5 shrink-0">
           {caso.numeroOt && (
