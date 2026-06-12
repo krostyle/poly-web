@@ -115,7 +115,7 @@ function NuevoTribunalDialog({ open, onClose }: { open: boolean; onClose: () => 
           </div>
           <div className="space-y-1.5">
             <label className="text-sm text-(--ink-600)">Región</label>
-            <Select value={region} onValueChange={setRegion}>
+            <Select value={region} onValueChange={(v) => setRegion(v ?? "")}>
               <SelectTrigger className="w-full">
                 <span className={region ? undefined : "text-muted-foreground"}>
                   {region || "Seleccionar región"}
