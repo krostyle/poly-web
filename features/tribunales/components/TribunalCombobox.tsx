@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -19,6 +19,16 @@ export function TribunalCombobox({ value, regionFilter, onSelect, className }: T
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const { data: tribunales = [] } = useTribunales();
+
+  useEffect(() => {
+    if (open) {
+      // Defer focus so the popover is mounted, preventScroll avoids page jump
+      const id = requestAnimationFrame(() => {
+        inputRef.current?.focus({ preventScroll: true });
+      });
+      return () => cancelAnimationFrame(id);
+    }
+  }, [open]);
 
   const grouped = useMemo(() => {
     const q = search.toLowerCase();
@@ -80,10 +90,6 @@ export function TribunalCombobox({ value, regionFilter, onSelect, className }: T
         className="w-80 p-0"
         align="end"
         sideOffset={4}
-        onOpenAutoFocus={(e) => {
-          e.preventDefault();
-          inputRef.current?.focus({ preventScroll: true });
-        }}
       >
         <div className="border-b border-border px-3 py-2">
           <input
@@ -93,6 +99,7 @@ export function TribunalCombobox({ value, regionFilter, onSelect, className }: T
             onChange={(e) => setSearch(e.target.value)}
             placeholder={placeholder}
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
+            autoComplete="off"
           />
         </div>
         <div className="max-h-64 overflow-y-auto py-1">
