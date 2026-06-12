@@ -499,9 +499,9 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
       if (casoEdit.denunciaValida !== casoOriginal.denunciaValida)
         patch.denunciaValida = casoEdit.denunciaValida;
       if (casoEdit.fechaDenuncia !== casoOriginal.fechaDenuncia)
-        patch.fechaDenuncia = casoEdit.fechaDenuncia || undefined;
+        patch.fechaDenuncia = casoEdit.fechaDenuncia;
       if (casoEdit.fechaDj !== casoOriginal.fechaDj)
-        patch.fechaDj = casoEdit.fechaDj || undefined;
+        patch.fechaDj = casoEdit.fechaDj;
       casoMutation.mutate(patch);
     }
     if (clienteIsDirty) {
