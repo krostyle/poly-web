@@ -226,15 +226,17 @@ function CasoEditCard({
   caso,
   current,
   onChange,
+  canEditCaseFields,
 }: {
   caso: Caso;
   current: CasoEditState;
   onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
+  canEditCaseFields: boolean;
 }) {
   const { data: usuarios } = useUsuariosBanco(caso.bancoId);
 
   const abogadoNombre = useMemo(
-    () => usuarios?.find((u) => u.id === current.abogadoId)?.nombre,
+    () => usuarios?.find((u) => u.id === current.abogadoId)?.nombre ?? "—",
     [usuarios, current.abogadoId]
   );
 
@@ -247,68 +249,86 @@ function CasoEditCard({
       </CardHeader>
       <CardContent className="pt-3">
         <dl>
-          {/* Abogado — render label directly so UUID never appears */}
-          <div className="flex items-center justify-between py-2.5 border-b border-border">
-            <dt className="text-sm text-(--ink-600) shrink-0">Abogado</dt>
-            <dd className="ml-3 min-w-0 flex-1 flex justify-end">
-              <Select
-                value={current.abogadoId}
-                onValueChange={(v) => onChange("abogadoId", v ?? "")}
-              >
-                <SelectTrigger className="h-8 w-full max-w-48 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
-                  {/* Skip SelectValue — render name directly to avoid UUID display bug */}
-                  <span className="flex-1 text-left text-sm truncate">
-                    {current.abogadoId
-                      ? (abogadoNombre ?? "—")
-                      : <span className="text-muted-foreground text-sm">Sin asignar</span>
-                    }
-                  </span>
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="" className="text-sm text-muted-foreground">
-                    Sin asignar
-                  </SelectItem>
-                  {(usuarios ?? []).map((u) => (
-                    <SelectItem key={u.id} value={u.id} className="text-sm">
-                      {u.nombre}
+          {/* Abogado */}
+          {canEditCaseFields ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Abogado</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <Select
+                  value={current.abogadoId}
+                  onValueChange={(v) => onChange("abogadoId", v ?? "")}
+                >
+                  <SelectTrigger className="h-8 w-full max-w-48 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                    <span className="flex-1 text-left text-sm truncate">
+                      {current.abogadoId
+                        ? abogadoNombre
+                        : <span className="text-muted-foreground text-sm">Sin asignar</span>
+                      }
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="" className="text-sm text-muted-foreground">
+                      Sin asignar
                     </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </dd>
-          </div>
+                    {(usuarios ?? []).map((u) => (
+                      <SelectItem key={u.id} value={u.id} className="text-sm">
+                        {u.nombre}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </dd>
+            </div>
+          ) : (
+            <Field label="Abogado" value={current.abogadoId ? abogadoNombre : "—"} />
+          )}
 
           {/* N° OT */}
-          <div className="flex items-center justify-between py-2.5 border-b border-border">
-            <dt className="text-sm text-(--ink-600) shrink-0">N° OT</dt>
-            <dd className="ml-3 min-w-0 flex-1 flex justify-end">
-              <input
-                type="text"
-                value={current.numeroOt}
-                onChange={(e) => onChange("numeroOt", e.target.value)}
-                placeholder="—"
-                className="w-full max-w-35 rounded border border-border/60 bg-(--slate-100)/60 px-2 py-0.5 text-right text-sm font-medium font-display text-(--amber-500) placeholder:font-sans placeholder:text-muted-foreground placeholder:font-normal outline-none hover:border-input focus:border-input focus:bg-(--slate-100)"
-              />
-            </dd>
-          </div>
+          {canEditCaseFields ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">N° OT</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <input
+                  type="text"
+                  value={current.numeroOt}
+                  onChange={(e) => onChange("numeroOt", e.target.value)}
+                  placeholder="—"
+                  className="w-full max-w-35 rounded border border-border/60 bg-(--slate-100)/60 px-2 py-0.5 text-right text-sm font-medium font-display text-(--amber-500) placeholder:font-sans placeholder:text-muted-foreground placeholder:font-normal outline-none hover:border-input focus:border-input focus:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+          ) : (
+            <Field
+              label="N° OT"
+              value={
+                current.numeroOt
+                  ? <span className="font-display font-semibold text-(--amber-500)">{current.numeroOt}</span>
+                  : "—"
+              }
+            />
+          )}
 
           {/* Denuncia válida */}
-          <div className="flex items-center justify-between py-2.5 border-b border-border">
-            <dt className="text-sm text-(--ink-600)">Denuncia válida</dt>
-            <dd>
-              <label className="flex items-center gap-2 cursor-pointer select-none text-sm font-medium text-(--navy-900)">
-                <input
-                  type="checkbox"
-                  checked={current.denunciaValida}
-                  onChange={(e) => onChange("denunciaValida", e.target.checked)}
-                  className="size-4 rounded accent-current"
-                />
-                {current.denunciaValida ? "Sí" : "No"}
-              </label>
-            </dd>
-          </div>
+          {canEditCaseFields ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600)">Denuncia válida</dt>
+              <dd>
+                <label className="flex items-center gap-2 cursor-pointer select-none text-sm font-medium text-(--navy-900)">
+                  <input
+                    type="checkbox"
+                    checked={current.denunciaValida}
+                    onChange={(e) => onChange("denunciaValida", e.target.checked)}
+                    className="size-4 rounded accent-current"
+                  />
+                  {current.denunciaValida ? "Sí" : "No"}
+                </label>
+              </dd>
+            </div>
+          ) : (
+            <Field label="Denuncia válida" value={current.denunciaValida ? "Sí" : "No"} />
+          )}
 
-          {/* Fecha DJ */}
+          {/* Fecha DJ — editable for all roles */}
           <div className="flex items-center justify-between py-2.5 border-b border-border">
             <dt className="text-sm text-(--ink-600) shrink-0">Fecha DJ</dt>
             <dd className="ml-3 min-w-0 flex-1 flex justify-end">
@@ -322,7 +342,7 @@ function CasoEditCard({
             </dd>
           </div>
 
-          {/* Fecha denuncia */}
+          {/* Fecha denuncia — editable for all roles */}
           <div className="flex items-center justify-between py-2.5 border-b border-border">
             <dt className="text-sm text-(--ink-600) shrink-0">Fecha denuncia</dt>
             <dd className="ml-3 min-w-0 flex-1 flex justify-end">
@@ -525,8 +545,11 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
   const { caso, cliente, operaciones } = data;
   const totalCLP = operaciones.reduce((sum, op) => sum + op.montoCLP, 0);
-  const isAdmin = me?.usuario.rol === "ADMIN";
+  const rol = me?.usuario.rol;
+  const isAdmin = rol === "ADMIN";
   const canDelete = isAdmin;
+  const canTransition = rol === "ADMIN" || rol === "ABOGADO";
+  const canEditCaseFields = rol === "ADMIN" || rol === "ABOGADO";
 
   return (
     <div className="space-y-6 pb-20">
@@ -576,11 +599,13 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
             </span>
           )}
           <EstadoBadge estado={caso.estado} />
-          <TransicionarEstadoDialog
-            casoId={caso.id}
-            estadoActual={caso.estado}
-            denunciaValida={caso.denunciaValida}
-          />
+          {canTransition && (
+            <TransicionarEstadoDialog
+              casoId={caso.id}
+              estadoActual={caso.estado}
+              denunciaValida={caso.denunciaValida}
+            />
+          )}
           {canDelete && (
             <Button
               variant="outline"
@@ -597,7 +622,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
       {/* Cards de detalle */}
       <div className="grid gap-4 md:grid-cols-2">
-        <CasoEditCard caso={caso} current={casoEdit} onChange={onCasoChange} />
+        <CasoEditCard caso={caso} current={casoEdit} onChange={onCasoChange} canEditCaseFields={canEditCaseFields} />
         <ClienteEditCard cliente={cliente} current={clienteEdit} onChange={onClienteChange} />
       </div>
 
