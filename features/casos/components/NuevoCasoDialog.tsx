@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import {
   Dialog,
@@ -10,20 +10,23 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-// base-ui DialogTrigger uses render prop, not asChild
 import { CrearCasoForm } from "./CrearCasoForm";
 
 export function NuevoCasoDialog() {
   const [open, setOpen] = useState(false);
+  const [navigating, setNavigating] = useState(false);
   const router = useRouter();
+  const [, startTransition] = useTransition();
 
   function handleSuccess(casoId: string) {
-    setOpen(false);
-    router.push(`/casos/${casoId}`);
+    setNavigating(true);
+    startTransition(() => {
+      router.push(`/casos/${casoId}`);
+    });
   }
 
   return (
-    <Dialog open={open} onOpenChange={setOpen}>
+    <Dialog open={open} onOpenChange={(next) => { if (!navigating) setOpen(next); }}>
       <DialogTrigger render={<Button size="sm" />}>
         Nuevo caso
       </DialogTrigger>
@@ -33,7 +36,11 @@ export function NuevoCasoDialog() {
             Nuevo caso
           </DialogTitle>
         </DialogHeader>
-        <CrearCasoForm onSuccess={handleSuccess} onCancel={() => setOpen(false)} />
+        <CrearCasoForm
+          onSuccess={handleSuccess}
+          onCancel={() => setOpen(false)}
+          navigating={navigating}
+        />
       </DialogContent>
     </Dialog>
   );

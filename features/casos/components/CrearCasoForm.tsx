@@ -20,9 +20,10 @@ import { formatRut, cleanRut } from "@/lib/utils/rut";
 interface CrearCasoFormProps {
   onSuccess?: (casoId: string) => void;
   onCancel?: () => void;
+  navigating?: boolean;
 }
 
-export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
+export function CrearCasoForm({ onSuccess, onCancel, navigating = false }: CrearCasoFormProps) {
   const { mutate, isPending, error } = useCrearCaso();
   const { data: bancos, isLoading: loadingBancos, isError: bancosError, refetch: refetchBancos } = useBancos();
 
@@ -161,17 +162,17 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
 
       <div className="flex justify-end gap-2 pt-1">
         {onCancel && (
-          <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={isPending}>
+          <Button type="button" variant="outline" size="sm" onClick={onCancel} disabled={isPending || navigating}>
             Cancelar
           </Button>
         )}
         <Button
           type="submit"
           size="sm"
-          disabled={isPending || !bancoId || !clienteRutDisplay || !clienteNombre || !fechaDj}
+          disabled={isPending || navigating || !bancoId || !clienteRutDisplay || !clienteNombre || !fechaDj}
         >
-          {isPending && <Loader2 className="size-3.5 animate-spin" />}
-          {isPending ? "Creando…" : "Crear caso"}
+          {(isPending || navigating) && <Loader2 className="size-3.5 animate-spin" />}
+          {navigating ? "Abriendo…" : isPending ? "Creando…" : "Crear caso"}
         </Button>
       </div>
     </form>
