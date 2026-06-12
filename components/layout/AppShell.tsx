@@ -3,14 +3,24 @@
 import { useState, useCallback } from "react";
 import { Sidebar } from "./Sidebar";
 import { Header } from "./Header";
+import { useMe } from "@/features/auth/hooks/useMe";
+import { OnboardingRolModal } from "@/features/auth/components/OnboardingRolModal";
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const closeSidebar = useCallback(() => setSidebarOpen(false), []);
   const openSidebar = useCallback(() => setSidebarOpen(true), []);
+  const { data: me } = useMe();
+
+  const needsOnboarding =
+    me !== undefined &&
+    me.usuario.rol !== "ADMIN" &&
+    !me.usuario.onboarding_completado;
 
   return (
     <div className="flex h-full min-h-screen">
+      {needsOnboarding && <OnboardingRolModal />}
+
       {/* Mobile backdrop */}
       {sidebarOpen && (
         <div

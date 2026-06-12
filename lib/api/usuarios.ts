@@ -25,6 +25,17 @@ export async function invitarUsuario(
   });
 }
 
+export async function completarOnboarding(
+  token: string,
+  rol: "ABOGADO" | "TRAMITADOR"
+): Promise<UsuarioEstudio> {
+  return apiClient.request<UsuarioEstudio>("/v1/me/rol", {
+    method: "PATCH",
+    token,
+    body: JSON.stringify({ rol }),
+  });
+}
+
 export async function actualizarRolUsuario(
   token: string,
   id: string,

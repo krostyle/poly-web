@@ -1,6 +1,6 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
-import { getUsuarios, invitarUsuario, actualizarRolUsuario } from "@/lib/api/usuarios";
+import { getUsuarios, invitarUsuario, actualizarRolUsuario, completarOnboarding } from "@/lib/api/usuarios";
 import type { Rol } from "@/lib/api/types";
 
 export function useUsuarios() {
@@ -25,6 +25,20 @@ export function useInvitarUsuario() {
     },
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ["usuarios"] });
+    },
+  });
+}
+
+export function useCompletarOnboarding() {
+  const { getToken } = useAuth();
+  const qc = useQueryClient();
+  return useMutation({
+    mutationFn: async (rol: "ABOGADO" | "TRAMITADOR") => {
+      const token = await getToken();
+      return completarOnboarding(token ?? "", rol);
+    },
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["me"] });
     },
   });
 }

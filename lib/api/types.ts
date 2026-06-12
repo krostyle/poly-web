@@ -159,6 +159,6 @@ export interface UsuarioBanco {
 
 export interface MeResponse {
   estudio: { id: string; nombre: string };
-  usuario: { id: string; nombre: string; email: string; rol: Rol };
+  usuario: { id: string; nombre: string; email: string; rol: Rol; onboarding_completado: boolean };
   bancos: Array<{ id: string; nombre: string }>;
 }
