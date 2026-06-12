@@ -50,19 +50,16 @@ export function TribunalCombobox({ value, onSelect, className }: TribunalCombobo
         if (!o) setSearch("");
       }}
     >
-      <PopoverTrigger asChild>
-        <button
-          type="button"
-          className={cn(
-            "flex h-8 w-full items-center justify-between gap-1 rounded border border-border/60 bg-(--slate-100)/60 px-2 text-left text-sm font-medium text-(--navy-900) hover:border-input hover:bg-(--slate-100) focus:outline-none focus:border-input",
-            className
-          )}
-        >
-          <span className="flex-1 truncate">
-            {value || <span className="font-normal text-muted-foreground">—</span>}
-          </span>
-          <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
-        </button>
+      <PopoverTrigger
+        className={cn(
+          "flex h-8 w-full items-center justify-between gap-1 rounded border border-border/60 bg-(--slate-100)/60 px-2 text-left text-sm font-medium text-(--navy-900) hover:border-input hover:bg-(--slate-100) focus:outline-none focus:border-input",
+          className
+        )}
+      >
+        <span className="flex-1 truncate">
+          {value || <span className="font-normal text-muted-foreground">—</span>}
+        </span>
+        <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
       </PopoverTrigger>
 
       <PopoverContent className="w-80 p-0" align="end" sideOffset={4}>
