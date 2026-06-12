@@ -52,7 +52,7 @@ export function EditarBancoDialog({ banco }: EditarBancoDialogProps) {
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="space-y-1.5">
             <label htmlFor="editar-nombre" className="block text-sm font-medium text-(--ink-600)">
-              Nombre del banco
+              Nombre del banco <span className="text-destructive">*</span>
             </label>
             <Input
               id="editar-nombre"

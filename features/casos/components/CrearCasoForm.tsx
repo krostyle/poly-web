@@ -58,7 +58,7 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
     <form onSubmit={handleSubmit} className="space-y-4">
       <div className="space-y-1.5">
         <label htmlFor="banco" className="block text-sm font-medium text-(--ink-600)">
-          Banco
+          Banco <span className="text-destructive">*</span>
         </label>
         {loadingBancos ? (
           <Skeleton className="h-9 w-full rounded-md" />
@@ -103,7 +103,7 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
       <div className="grid grid-cols-2 gap-3">
         <div className="space-y-1.5">
           <label htmlFor="rut" className="block text-sm font-medium text-(--ink-600)">
-            RUT
+            RUT <span className="text-destructive">*</span>
           </label>
           <Input
             id="rut"
@@ -129,7 +129,7 @@ export function CrearCasoForm({ onSuccess, onCancel }: CrearCasoFormProps) {
 
       <div className="space-y-1.5">
         <label htmlFor="nombre" className="block text-sm font-medium text-(--ink-600)">
-          Nombre del cliente
+          Nombre del cliente <span className="text-destructive">*</span>
         </label>
         <Input
           id="nombre"

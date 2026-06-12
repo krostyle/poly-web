@@ -96,7 +96,7 @@ export function InvitarUsuarioDialog() {
         ) : (
           <form onSubmit={handleSubmit} className="space-y-4 pt-2">
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-(--ink-600)">Email</label>
+              <label className="text-xs font-medium text-(--ink-600)">Email <span className="text-destructive">*</span></label>
               <input
                 type="email"
                 value={email}
@@ -108,7 +108,7 @@ export function InvitarUsuarioDialog() {
             </div>
 
             <div className="space-y-1.5">
-              <label className="text-xs font-medium text-(--ink-600)">Rol</label>
+              <label className="text-xs font-medium text-(--ink-600)">Rol <span className="text-destructive">*</span></label>
               <Select value={rol} onValueChange={(v) => setRol(v as Rol)}>
                 <SelectTrigger className="w-full">
                   <SelectValue>{ROL_LABELS[rol]}</SelectValue>
