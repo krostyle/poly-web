@@ -30,13 +30,16 @@ export type MotivoTermino =
 
 export type Semaforo = "VERDE" | "AMARILLO" | "ROJO" | "VENCIDO";
 
+export type EstadoDenuncia = "PENDIENTE" | "ACOGIDA" | "RECHAZADA";
+
 export type TipoPlazo =
   | "ANALISIS_INTERNO"
   | "RESTITUCION"
   | "ASIGNACION"
   | "PRECAUTELAR"
   | "DEMANDA"
-  | "RESTITUCION_RECHAZO";
+  | "RESTITUCION_RECHAZO"
+  | "RESPUESTA_DENUNCIA";
 
 export interface Caso {
   id: string;
@@ -48,7 +51,7 @@ export interface Caso {
   estado: Estado;
   fechaDj?: string; // ISO date — optional, may be registered later
   fechaDenuncia?: string;
-  denunciaValida: boolean;
+  estadoDenuncia: EstadoDenuncia;
   motivoTermino?: MotivoTermino;
   createdAt: string;
   updatedAt: string;
@@ -88,7 +91,7 @@ export interface CasoListItem {
   numeroOt?: string;
   estado: Estado;
   fechaDj?: string;
-  denunciaValida: boolean;
+  estadoDenuncia: EstadoDenuncia;
   createdAt: string;
 }
 

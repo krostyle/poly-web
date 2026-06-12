@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry, Estado } from "./types";
+import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry, Estado, EstadoDenuncia } from "./types";
 
 // Raw snake_case shapes returned by poly-api
 
@@ -14,7 +14,7 @@ interface RawCasoListItem {
   numero_ot: string | null;
   estado: Estado;
   fecha_dj: string | null;
-  denuncia_valida: boolean;
+  estado_denuncia: EstadoDenuncia;
   created_at: string;
 }
 
@@ -38,7 +38,7 @@ interface RawCaso {
   estado: Estado;
   fecha_dj: string | null;
   fecha_denuncia: string | null;
-  denuncia_valida: boolean;
+  estado_denuncia: EstadoDenuncia;
   motivo_termino: string | null;
   created_at: string;
   updated_at: string;
@@ -86,7 +86,7 @@ function mapCasoListItem(raw: RawCasoListItem): CasoListItem {
     numeroOt: raw.numero_ot ?? undefined,
     estado: raw.estado,
     fechaDj: raw.fecha_dj ?? undefined,
-    denunciaValida: raw.denuncia_valida,
+    estadoDenuncia: raw.estado_denuncia,
     createdAt: raw.created_at,
   };
 }
@@ -103,7 +103,7 @@ function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
       estado: raw.caso.estado,
       fechaDj: raw.caso.fecha_dj ?? undefined,
       fechaDenuncia: raw.caso.fecha_denuncia ?? undefined,
-      denunciaValida: raw.caso.denuncia_valida,
+      estadoDenuncia: raw.caso.estado_denuncia,
       motivoTermino: (raw.caso.motivo_termino ?? undefined) as import("./types").MotivoTermino | undefined,
       createdAt: raw.caso.created_at,
       updatedAt: raw.caso.updated_at,
@@ -182,7 +182,7 @@ export async function actualizarCaso(
   patch: {
     abogadoId?: string;
     numeroOt?: string;
-    denunciaValida?: boolean;
+    estadoDenuncia?: EstadoDenuncia;
     fechaDenuncia?: string;
     fechaDj?: string;
   },
@@ -191,7 +191,7 @@ export async function actualizarCaso(
   const body: Record<string, unknown> = {};
   if (patch.abogadoId !== undefined) body.abogado_id = patch.abogadoId;
   if (patch.numeroOt !== undefined) body.numero_ot = patch.numeroOt;
-  if (patch.denunciaValida !== undefined) body.denuncia_valida = patch.denunciaValida;
+  if (patch.estadoDenuncia !== undefined) body.estado_denuncia = patch.estadoDenuncia;
   if (patch.fechaDenuncia !== undefined) body.fecha_denuncia = patch.fechaDenuncia;
   if (patch.fechaDj !== undefined) body.fecha_dj = patch.fechaDj;
   const raw = await apiClient.request<RawCasoDetalle>(`/v1/casos/${id}`, {

@@ -18,12 +18,13 @@ import { cn } from "@/lib/utils";
 import type { TipoPlazo, Semaforo } from "@/lib/api/types";
 
 const TIPO_LABELS: Record<TipoPlazo, string> = {
-  ANALISIS_INTERNO: "Análisis interno",
-  RESTITUCION: "Restitución",
-  ASIGNACION: "Asignación",
-  PRECAUTELAR: "Medida precautelar",
-  DEMANDA: "Demanda",
-  RESTITUCION_RECHAZO: "Rechazo restitución",
+  ANALISIS_INTERNO:   "Análisis interno",
+  RESTITUCION:        "Restitución",
+  ASIGNACION:         "Asignación",
+  PRECAUTELAR:        "Medida precautelar",
+  DEMANDA:            "Demanda",
+  RESTITUCION_RECHAZO:"Rechazo restitución",
+  RESPUESTA_DENUNCIA: "Respuesta denuncia",
 };
 
 const SEMAFORO_OPTIONS: { value: Semaforo | ""; label: string }[] = [

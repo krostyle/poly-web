@@ -40,7 +40,7 @@ import { useActualizarCliente } from "@/features/casos/hooks/useActualizarClient
 import { useEliminarCaso } from "@/features/casos/hooks/useEliminarCaso";
 import { useUsuariosBanco } from "@/features/bancos/hooks/useUsuariosBanco";
 import { useMe } from "@/features/auth/hooks/useMe";
-import type { HistorialEntry, Estado, Caso, Cliente } from "@/lib/api/types";
+import type { HistorialEntry, Estado, EstadoDenuncia, Caso, Cliente } from "@/lib/api/types";
 
 interface CasoDetalleViewProps {
   id: string;
@@ -207,10 +207,16 @@ function UnsavedChangesBar({
 
 // ── Shared editable field types ───────────────────────────────────────────────
 
+const ESTADO_DENUNCIA_LABELS: Record<EstadoDenuncia, string> = {
+  PENDIENTE: "Pendiente",
+  ACOGIDA:   "Acogida",
+  RECHAZADA: "Rechazada",
+};
+
 interface CasoEditState {
   abogadoId: string;
   numeroOt: string;
-  denunciaValida: boolean;
+  estadoDenuncia: EstadoDenuncia;
   fechaDenuncia: string;
   fechaDj: string;
 }
@@ -308,24 +314,32 @@ function CasoEditCard({
             />
           )}
 
-          {/* Denuncia válida */}
+          {/* Estado denuncia */}
           {canEditCaseFields ? (
             <div className="flex items-center justify-between py-2.5 border-b border-border">
-              <dt className="text-sm text-(--ink-600)">Denuncia válida</dt>
-              <dd>
-                <label className="flex items-center gap-2 cursor-pointer select-none text-sm font-medium text-(--navy-900)">
-                  <input
-                    type="checkbox"
-                    checked={current.denunciaValida}
-                    onChange={(e) => onChange("denunciaValida", e.target.checked)}
-                    className="size-4 rounded accent-current"
-                  />
-                  {current.denunciaValida ? "Sí" : "No"}
-                </label>
+              <dt className="text-sm text-(--ink-600) shrink-0">Denuncia banco</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <Select
+                  value={current.estadoDenuncia}
+                  onValueChange={(v) => onChange("estadoDenuncia", (v ?? "PENDIENTE") as EstadoDenuncia)}
+                >
+                  <SelectTrigger className="h-8 w-full max-w-36 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                    <span className="flex-1 text-left text-sm truncate">
+                      {ESTADO_DENUNCIA_LABELS[current.estadoDenuncia]}
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {(["PENDIENTE", "ACOGIDA", "RECHAZADA"] as EstadoDenuncia[]).map((v) => (
+                      <SelectItem key={v} value={v} className="text-sm">
+                        {ESTADO_DENUNCIA_LABELS[v]}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </dd>
             </div>
           ) : (
-            <Field label="Denuncia válida" value={current.denunciaValida ? "Sí" : "No"} />
+            <Field label="Denuncia banco" value={ESTADO_DENUNCIA_LABELS[current.estadoDenuncia]} />
           )}
 
           {/* Fecha DJ — editable for all roles */}
@@ -444,12 +458,12 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
     () => ({
       abogadoId: data?.caso.abogadoId ?? "",
       numeroOt: data?.caso.numeroOt ?? "",
-      denunciaValida: data?.caso.denunciaValida ?? false,
+      estadoDenuncia: data?.caso.estadoDenuncia ?? "PENDIENTE",
       fechaDenuncia: data?.caso.fechaDenuncia ?? "",
       fechaDj: data?.caso.fechaDj ?? "",
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data?.caso.abogadoId, data?.caso.numeroOt, data?.caso.denunciaValida, data?.caso.fechaDenuncia, data?.caso.fechaDj]
+    [data?.caso.abogadoId, data?.caso.numeroOt, data?.caso.estadoDenuncia, data?.caso.fechaDenuncia, data?.caso.fechaDj]
   );
 
   const clienteOriginal = useMemo<ClienteEditState>(
@@ -478,7 +492,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
   const casoIsDirty =
     casoEdit.abogadoId !== casoOriginal.abogadoId ||
     casoEdit.numeroOt !== casoOriginal.numeroOt ||
-    casoEdit.denunciaValida !== casoOriginal.denunciaValida ||
+    casoEdit.estadoDenuncia !== casoOriginal.estadoDenuncia ||
     casoEdit.fechaDenuncia !== casoOriginal.fechaDenuncia ||
     casoEdit.fechaDj !== casoOriginal.fechaDj;
 
@@ -496,8 +510,8 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
         patch.abogadoId = casoEdit.abogadoId || undefined;
       if (casoEdit.numeroOt !== casoOriginal.numeroOt)
         patch.numeroOt = casoEdit.numeroOt.trim() || undefined;
-      if (casoEdit.denunciaValida !== casoOriginal.denunciaValida)
-        patch.denunciaValida = casoEdit.denunciaValida;
+      if (casoEdit.estadoDenuncia !== casoOriginal.estadoDenuncia)
+        patch.estadoDenuncia = casoEdit.estadoDenuncia;
       if (casoEdit.fechaDenuncia !== casoOriginal.fechaDenuncia)
         patch.fechaDenuncia = casoEdit.fechaDenuncia;
       if (casoEdit.fechaDj !== casoOriginal.fechaDj)
@@ -603,7 +617,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
             <TransicionarEstadoDialog
               casoId={caso.id}
               estadoActual={caso.estado}
-              denunciaValida={caso.denunciaValida}
+              estadoDenuncia={caso.estadoDenuncia}
             />
           )}
           {canDelete && (

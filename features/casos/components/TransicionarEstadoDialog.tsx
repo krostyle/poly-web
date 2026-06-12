@@ -17,7 +17,7 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ESTADO_LABELS } from "./EstadoBadge";
-import type { Estado, MotivoTermino } from "@/lib/api/types";
+import type { Estado, EstadoDenuncia, MotivoTermino } from "@/lib/api/types";
 import { useTransicionarEstado } from "@/features/casos/hooks/useTransicionarEstado";
 
 // ── Transiciones válidas (mirror del backend) ────────────────────────────────
@@ -79,18 +79,27 @@ const MOTIVOS: { value: MotivoTermino; label: string }[] = [
 interface Props {
   casoId: string;
   estadoActual: Estado;
-  denunciaValida: boolean;
+  estadoDenuncia: EstadoDenuncia;
 }
 
 // ── Componente ───────────────────────────────────────────────────────────────
-export function TransicionarEstadoDialog({ casoId, estadoActual }: Props) {
+export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia }: Props) {
   const [open, setOpen] = useState(false);
   const [selectedEstado, setSelectedEstado] = useState<Estado | null>(null);
   const [motivoTermino, setMotivoTermino] = useState<MotivoTermino | "">("");
   const [modoCorreccion, setModoCorreccion] = useState(false);
   const { mutate, isPending, error } = useTransicionarEstado(casoId);
 
-  const siguientes = TRANSICIONES[estadoActual] ?? [];
+  const siguientesBase = TRANSICIONES[estadoActual] ?? [];
+  // Apply denuncia guard: from PREJUDICIAL the bank response determines the path.
+  const siguientes = (estadoActual === "PREJUDICIAL" && !modoCorreccion)
+    ? siguientesBase.filter((e) => {
+        if (e === "PAGO_NORMATIVO") return estadoDenuncia === "RECHAZADA";
+        if (e === "JUDICIAL")       return estadoDenuncia === "ACOGIDA";
+        return true;
+      })
+    : siguientesBase;
+
   const opciones: Estado[] = modoCorreccion
     ? (Object.keys(TRANSICIONES) as Estado[]).filter((e) => e !== estadoActual)
     : siguientes;

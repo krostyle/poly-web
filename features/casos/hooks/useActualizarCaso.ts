@@ -10,7 +10,7 @@ export function useActualizarCaso(casoId: string) {
     mutationFn: async (patch: {
       abogadoId?: string;
       numeroOt?: string;
-      denunciaValida?: boolean;
+      estadoDenuncia?: import("@/lib/api/types").EstadoDenuncia;
       fechaDenuncia?: string;
       fechaDj?: string;
     }) => {
