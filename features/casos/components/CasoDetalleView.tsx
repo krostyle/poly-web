@@ -388,7 +388,7 @@ function CasoEditCard({
               <DatePicker
                 value={current.fechaDenuncia || undefined}
                 onChange={(v) => onChange("fechaDenuncia", v)}
-                placeholder={current.estadoDenuncia === "PENDIENTE" ? "Esperando respuesta" : "Sin fecha"}
+                placeholder="Sin fecha"
                 disabled={current.estadoDenuncia === "PENDIENTE"}
                 className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
               />
