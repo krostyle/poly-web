@@ -388,7 +388,7 @@ function CasoEditCard({
               <DatePicker
                 value={current.fechaDenuncia || undefined}
                 onChange={(v) => onChange("fechaDenuncia", v)}
-                placeholder="Sin fecha"
+                placeholder={current.estadoDenuncia === "PENDIENTE" ? "" : "Sin fecha"}
                 disabled={current.estadoDenuncia === "PENDIENTE"}
                 className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
               />
@@ -504,25 +504,6 @@ function DatosJudicialesCard({
             <Field label="N° Rol" value={current.numeroRol || "—"} />
           )}
 
-          {/* Tribunal */}
-          {canEdit ? (
-            <div className="flex items-center justify-between py-2.5 border-b border-border">
-              <dt className="text-sm text-(--ink-600) shrink-0">Tribunal</dt>
-              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
-                <TribunalCombobox
-                  value={current.tribunal}
-                  onSelect={(nombre, region) => {
-                    onChange("tribunal", nombre);
-                    onChange("region", region);
-                  }}
-                  className="w-full max-w-64"
-                />
-              </dd>
-            </div>
-          ) : (
-            <Field label="Tribunal" value={current.tribunal || "—"} />
-          )}
-
           {/* Región */}
           {canEdit ? (
             <div className="flex items-center justify-between py-2.5 border-b border-border">
@@ -552,6 +533,25 @@ function DatosJudicialesCard({
             </div>
           ) : (
             <Field label="Región" value={current.region || "—"} />
+          )}
+
+          {/* Tribunal */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Tribunal</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <TribunalCombobox
+                  value={current.tribunal}
+                  onSelect={(nombre, region) => {
+                    onChange("tribunal", nombre);
+                    onChange("region", region);
+                  }}
+                  className="w-full max-w-64"
+                />
+              </dd>
+            </div>
+          ) : (
+            <Field label="Tribunal" value={current.tribunal || "—"} />
           )}
         </dl>
       </CardContent>
