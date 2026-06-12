@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { ChevronsUpDown, Check } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
@@ -17,6 +17,7 @@ interface TribunalComboboxProps {
 export function TribunalCombobox({ value, regionFilter, onSelect, className }: TribunalComboboxProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
   const { data: tribunales = [] } = useTribunales();
 
   const grouped = useMemo(() => {
@@ -65,20 +66,28 @@ export function TribunalCombobox({ value, regionFilter, onSelect, className }: T
     >
       <PopoverTrigger
         className={cn(
-          "flex h-8 w-full items-center justify-between gap-1 rounded border border-border/60 bg-(--slate-100)/60 px-2 text-left text-sm font-medium text-(--navy-900) hover:border-input hover:bg-(--slate-100) focus:outline-none focus:border-input",
+          "flex min-h-8 w-full items-center justify-between gap-1 rounded border border-border/60 bg-(--slate-100)/60 px-2 py-1 text-left text-sm font-medium text-(--navy-900) hover:border-input hover:bg-(--slate-100) focus:outline-none focus:border-input",
           className
         )}
       >
-        <span className="flex-1 truncate">
+        <span className="flex-1 leading-snug">
           {value || <span className="font-normal text-muted-foreground">—</span>}
         </span>
-        <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
+        <ChevronsUpDown className="size-3.5 shrink-0 self-center text-muted-foreground" />
       </PopoverTrigger>
 
-      <PopoverContent className="w-80 p-0" align="end" sideOffset={4}>
+      <PopoverContent
+        className="w-80 p-0"
+        align="end"
+        sideOffset={4}
+        onOpenAutoFocus={(e) => {
+          e.preventDefault();
+          inputRef.current?.focus({ preventScroll: true });
+        }}
+      >
         <div className="border-b border-border px-3 py-2">
           <input
-            autoFocus
+            ref={inputRef}
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
