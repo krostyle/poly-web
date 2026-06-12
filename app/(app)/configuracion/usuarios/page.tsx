@@ -38,7 +38,7 @@ export default function UsuariosPage() {
       <div className="rounded-xl border border-border bg-(--slate-100)/50 p-4 text-xs text-(--ink-600) space-y-1">
         <p className="font-medium text-(--navy-900)">¿Cómo funciona la invitación?</p>
         <p>
-          El usuario invitado recibirá un email de Clerk para unirse al estudio. Una vez que
+          El usuario invitado recibirá un email para unirse al estudio. Una vez que
           acepte e inicie sesión en Poly, su perfil quedará registrado automáticamente y podrás
           asignarlo a los bancos correspondientes desde la sección <strong>Bancos</strong>.
         </p>
