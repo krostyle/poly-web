@@ -9,24 +9,33 @@ import type { Tribunal } from "@/lib/api/types";
 
 interface TribunalComboboxProps {
   value: string;
+  regionFilter?: string; // pre-filter by selected region; user can still search to override
   onSelect: (nombre: string, region: string) => void;
   className?: string;
 }
 
-export function TribunalCombobox({ value, onSelect, className }: TribunalComboboxProps) {
+export function TribunalCombobox({ value, regionFilter, onSelect, className }: TribunalComboboxProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const { data: tribunales = [] } = useTribunales();
 
   const grouped = useMemo(() => {
     const q = search.toLowerCase();
-    const filtered = q
-      ? tribunales.filter(
-          (t) =>
-            t.nombre.toLowerCase().includes(q) ||
-            t.region.toLowerCase().includes(q)
-        )
-      : tribunales;
+
+    let filtered: Tribunal[];
+    if (q) {
+      // When typing, search across all regions
+      filtered = tribunales.filter(
+        (t) =>
+          t.nombre.toLowerCase().includes(q) ||
+          t.region.toLowerCase().includes(q)
+      );
+    } else if (regionFilter) {
+      // No search + region selected → show only that region
+      filtered = tribunales.filter((t) => t.region === regionFilter);
+    } else {
+      filtered = tribunales;
+    }
 
     const map = new Map<string, Tribunal[]>();
     for (const t of filtered) {
@@ -34,13 +43,17 @@ export function TribunalCombobox({ value, onSelect, className }: TribunalCombobo
       map.get(t.region)!.push(t);
     }
     return map;
-  }, [tribunales, search]);
+  }, [tribunales, search, regionFilter]);
 
   function handleSelect(t: Tribunal) {
     onSelect(t.nombre, t.region);
     setOpen(false);
     setSearch("");
   }
+
+  const placeholder = regionFilter
+    ? `Buscar en ${regionFilter}…`
+    : "Buscar tribunal o región…";
 
   return (
     <Popover
@@ -69,7 +82,7 @@ export function TribunalCombobox({ value, onSelect, className }: TribunalCombobo
             type="text"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            placeholder="Buscar tribunal o región…"
+            placeholder={placeholder}
             className="w-full bg-transparent text-sm outline-none placeholder:text-muted-foreground"
           />
         </div>
@@ -81,9 +94,12 @@ export function TribunalCombobox({ value, onSelect, className }: TribunalCombobo
           )}
           {[...grouped.entries()].map(([region, courts]) => (
             <div key={region}>
-              <div className="sticky top-0 bg-(--slate-100)/90 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-(--ink-600) backdrop-blur-sm">
-                {region}
-              </div>
+              {/* Hide region header when only one region is shown */}
+              {grouped.size > 1 && (
+                <div className="sticky top-0 bg-(--slate-100)/90 px-3 py-1.5 text-[11px] font-semibold uppercase tracking-wide text-(--ink-600) backdrop-blur-sm">
+                  {region}
+                </div>
+              )}
               {courts.map((t) => (
                 <button
                   key={t.id}

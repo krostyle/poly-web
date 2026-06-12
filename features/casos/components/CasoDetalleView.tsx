@@ -542,6 +542,7 @@ function DatosJudicialesCard({
               <dd className="ml-3 min-w-0 flex-1 flex justify-end">
                 <TribunalCombobox
                   value={current.tribunal}
+                  regionFilter={current.region || undefined}
                   onSelect={(nombre, region) => {
                     onChange("tribunal", nombre);
                     onChange("region", region);
