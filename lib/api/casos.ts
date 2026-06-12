@@ -40,6 +40,9 @@ interface RawCaso {
   fecha_denuncia: string | null;
   estado_denuncia: EstadoDenuncia;
   motivo_termino: string | null;
+  numero_rol: string | null;
+  tribunal: string | null;
+  region: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -105,6 +108,9 @@ function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
       fechaDenuncia: raw.caso.fecha_denuncia ?? undefined,
       estadoDenuncia: raw.caso.estado_denuncia,
       motivoTermino: (raw.caso.motivo_termino ?? undefined) as import("./types").MotivoTermino | undefined,
+      numeroRol: raw.caso.numero_rol ?? undefined,
+      tribunal: raw.caso.tribunal ?? undefined,
+      region: raw.caso.region ?? undefined,
       createdAt: raw.caso.created_at,
       updatedAt: raw.caso.updated_at,
     },
@@ -185,6 +191,9 @@ export async function actualizarCaso(
     estadoDenuncia?: EstadoDenuncia;
     fechaDenuncia?: string;
     fechaDj?: string;
+    numeroRol?: string;
+    tribunal?: string;
+    region?: string;
   },
   token: string
 ): Promise<CasoDetalle> {
@@ -194,6 +203,9 @@ export async function actualizarCaso(
   if (patch.estadoDenuncia !== undefined) body.estado_denuncia = patch.estadoDenuncia;
   if (patch.fechaDenuncia !== undefined) body.fecha_denuncia = patch.fechaDenuncia;
   if (patch.fechaDj !== undefined) body.fecha_dj = patch.fechaDj;
+  if (patch.numeroRol !== undefined) body.numero_rol = patch.numeroRol;
+  if (patch.tribunal !== undefined) body.tribunal = patch.tribunal;
+  if (patch.region !== undefined) body.region = patch.region;
   const raw = await apiClient.request<RawCasoDetalle>(`/v1/casos/${id}`, {
     method: "PATCH",
     body: JSON.stringify(body),

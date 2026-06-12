@@ -13,6 +13,9 @@ export function useActualizarCaso(casoId: string) {
       estadoDenuncia?: import("@/lib/api/types").EstadoDenuncia;
       fechaDenuncia?: string;
       fechaDj?: string;
+      numeroRol?: string;
+      tribunal?: string;
+      region?: string;
     }) => {
       const token = await getToken();
       return actualizarCaso(casoId, patch, token ?? "");

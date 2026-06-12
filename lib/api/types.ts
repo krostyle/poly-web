@@ -52,6 +52,9 @@ export interface Caso {
   fechaDenuncia?: string;
   estadoDenuncia: EstadoDenuncia;
   motivoTermino?: MotivoTermino;
+  numeroRol?: string;
+  tribunal?: string;
+  region?: string;
   createdAt: string;
   updatedAt: string;
 }

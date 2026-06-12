@@ -219,7 +219,29 @@ interface CasoEditState {
   estadoDenuncia: EstadoDenuncia;
   fechaDenuncia: string;
   fechaDj: string;
+  numeroRol: string;
+  tribunal: string;
+  region: string;
 }
+
+const REGIONES_CHILE = [
+  "Arica y Parinacota",
+  "Tarapacá",
+  "Antofagasta",
+  "Atacama",
+  "Coquimbo",
+  "Valparaíso",
+  "Metropolitana",
+  "O'Higgins",
+  "Maule",
+  "Ñuble",
+  "Biobío",
+  "La Araucanía",
+  "Los Ríos",
+  "Los Lagos",
+  "Aysén",
+  "Magallanes",
+] as const;
 
 interface ClienteEditState {
   nombre: string;
@@ -442,6 +464,98 @@ function ClienteEditCard({
   );
 }
 
+// ── Datos judiciales card ─────────────────────────────────────────────────────
+
+function DatosJudicialesCard({
+  current,
+  onChange,
+  canEdit,
+}: {
+  current: Pick<CasoEditState, "numeroRol" | "tribunal" | "region">;
+  onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
+  canEdit: boolean;
+}) {
+  return (
+    <Card className="rounded-xl border-border shadow-none">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+          Datos judiciales
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-3">
+        <dl>
+          {/* Número de rol */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">N° Rol</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <input
+                  type="text"
+                  value={current.numeroRol}
+                  onChange={(e) => onChange("numeroRol", e.target.value)}
+                  placeholder="—"
+                  className={`${editInputClass} placeholder:font-normal placeholder:text-muted-foreground`}
+                />
+              </dd>
+            </div>
+          ) : (
+            <Field label="N° Rol" value={current.numeroRol || "—"} />
+          )}
+
+          {/* Tribunal */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Tribunal</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <input
+                  type="text"
+                  value={current.tribunal}
+                  onChange={(e) => onChange("tribunal", e.target.value)}
+                  placeholder="—"
+                  className={`${editInputClass} placeholder:font-normal placeholder:text-muted-foreground`}
+                />
+              </dd>
+            </div>
+          ) : (
+            <Field label="Tribunal" value={current.tribunal || "—"} />
+          )}
+
+          {/* Región */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Región</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <Select
+                  value={current.region}
+                  onValueChange={(v) => onChange("region", v ?? "")}
+                >
+                  <SelectTrigger className="h-8 w-full max-w-48 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                    <span className="flex-1 text-left text-sm truncate">
+                      {current.region || <span className="text-muted-foreground text-sm">Sin región</span>}
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="" className="text-sm text-muted-foreground">
+                      Sin región
+                    </SelectItem>
+                    {REGIONES_CHILE.map((r) => (
+                      <SelectItem key={r} value={r} className="text-sm">
+                        {r}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </dd>
+            </div>
+          ) : (
+            <Field label="Región" value={current.region || "—"} />
+          )}
+        </dl>
+      </CardContent>
+    </Card>
+  );
+}
+
 // ── Main view ─────────────────────────────────────────────────────────────────
 
 export function CasoDetalleView({ id }: CasoDetalleViewProps) {
@@ -463,9 +577,12 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
       estadoDenuncia: data?.caso.estadoDenuncia ?? "PENDIENTE",
       fechaDenuncia: data?.caso.fechaDenuncia ?? "",
       fechaDj: data?.caso.fechaDj ?? "",
+      numeroRol: data?.caso.numeroRol ?? "",
+      tribunal: data?.caso.tribunal ?? "",
+      region: data?.caso.region ?? "",
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data?.caso.abogadoId, data?.caso.numeroOt, data?.caso.estadoDenuncia, data?.caso.fechaDenuncia, data?.caso.fechaDj]
+    [data?.caso.abogadoId, data?.caso.numeroOt, data?.caso.estadoDenuncia, data?.caso.fechaDenuncia, data?.caso.fechaDj, data?.caso.numeroRol, data?.caso.tribunal, data?.caso.region]
   );
 
   const clienteOriginal = useMemo<ClienteEditState>(
@@ -496,7 +613,10 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
     casoEdit.numeroOt !== casoOriginal.numeroOt ||
     casoEdit.estadoDenuncia !== casoOriginal.estadoDenuncia ||
     casoEdit.fechaDenuncia !== casoOriginal.fechaDenuncia ||
-    casoEdit.fechaDj !== casoOriginal.fechaDj;
+    casoEdit.fechaDj !== casoOriginal.fechaDj ||
+    casoEdit.numeroRol !== casoOriginal.numeroRol ||
+    casoEdit.tribunal !== casoOriginal.tribunal ||
+    casoEdit.region !== casoOriginal.region;
 
   const clienteIsDirty =
     clienteEdit.nombre !== clienteOriginal.nombre ||
@@ -518,6 +638,12 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
         patch.fechaDenuncia = casoEdit.fechaDenuncia;
       if (casoEdit.fechaDj !== casoOriginal.fechaDj)
         patch.fechaDj = casoEdit.fechaDj;
+      if (casoEdit.numeroRol !== casoOriginal.numeroRol)
+        patch.numeroRol = casoEdit.numeroRol.trim() || undefined;
+      if (casoEdit.tribunal !== casoOriginal.tribunal)
+        patch.tribunal = casoEdit.tribunal.trim() || undefined;
+      if (casoEdit.region !== casoOriginal.region)
+        patch.region = casoEdit.region || undefined;
       casoMutation.mutate(patch);
     }
     if (clienteIsDirty) {
@@ -641,6 +767,9 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
         <CasoEditCard caso={caso} current={casoEdit} onChange={onCasoChange} canEditCaseFields={canEditCaseFields} />
         <ClienteEditCard cliente={cliente} current={clienteEdit} onChange={onClienteChange} />
       </div>
+
+      {/* Datos judiciales */}
+      <DatosJudicialesCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} />
 
       {/* Operaciones */}
       <Card className="rounded-xl border-border shadow-none">
