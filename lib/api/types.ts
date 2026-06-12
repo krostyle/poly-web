@@ -146,6 +146,12 @@ export interface Documento {
   createdAt: string;
 }
 
+export interface Tribunal {
+  id: string;
+  nombre: string;
+  region: string;
+}
+
 export type Rol = "ADMIN" | "ABOGADO" | "TRAMITADOR";
 
 export interface Banco {

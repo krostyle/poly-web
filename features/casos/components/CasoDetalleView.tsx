@@ -40,6 +40,7 @@ import { useActualizarCliente } from "@/features/casos/hooks/useActualizarClient
 import { useEliminarCaso } from "@/features/casos/hooks/useEliminarCaso";
 import { useUsuariosBanco } from "@/features/bancos/hooks/useUsuariosBanco";
 import { useMe } from "@/features/auth/hooks/useMe";
+import { TribunalCombobox } from "@/features/tribunales/components/TribunalCombobox";
 import type { HistorialEntry, Estado, EstadoDenuncia, Caso, Cliente } from "@/lib/api/types";
 
 interface CasoDetalleViewProps {
@@ -508,12 +509,13 @@ function DatosJudicialesCard({
             <div className="flex items-center justify-between py-2.5 border-b border-border">
               <dt className="text-sm text-(--ink-600) shrink-0">Tribunal</dt>
               <dd className="ml-3 min-w-0 flex-1 flex justify-end">
-                <input
-                  type="text"
+                <TribunalCombobox
                   value={current.tribunal}
-                  onChange={(e) => onChange("tribunal", e.target.value)}
-                  placeholder="—"
-                  className={`${editInputClass} placeholder:font-normal placeholder:text-muted-foreground`}
+                  onSelect={(nombre, region) => {
+                    onChange("tribunal", nombre);
+                    onChange("region", region);
+                  }}
+                  className="w-full max-w-64"
                 />
               </dd>
             </div>

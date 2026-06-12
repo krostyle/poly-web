@@ -19,6 +19,7 @@ const mainNav = [
 const adminNav = [
   { href: "/configuracion/bancos", label: "Bancos" },
   { href: "/configuracion/usuarios", label: "Usuarios" },
+  { href: "/configuracion/tribunales", label: "Tribunales" },
 ];
 
 interface SidebarProps {
