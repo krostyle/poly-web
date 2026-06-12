@@ -380,14 +380,15 @@ function CasoEditCard({
             </dd>
           </div>
 
-          {/* Fecha denuncia — editable for all roles */}
+          {/* Fecha denuncia — bloqueada mientras el banco no haya respondido */}
           <div className="flex items-center justify-between py-2.5 border-b border-border">
             <dt className="text-sm text-(--ink-600) shrink-0">Fecha denuncia</dt>
             <dd className="ml-3 min-w-0 flex-1 flex justify-end">
               <DatePicker
                 value={current.fechaDenuncia || undefined}
                 onChange={(v) => onChange("fechaDenuncia", v)}
-                placeholder="Sin fecha"
+                placeholder={current.estadoDenuncia === "PENDIENTE" ? "Esperando respuesta" : "Sin fecha"}
+                disabled={current.estadoDenuncia === "PENDIENTE"}
                 className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
               />
             </dd>
