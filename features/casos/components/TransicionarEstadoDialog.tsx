@@ -133,109 +133,116 @@ export function TransicionarEstadoDialog({ casoId, estadoActual }: Props) {
       <DialogTrigger render={<Button size="sm" disabled={!hasSiguientes && !modoCorreccion} />}>
         Cambiar estado
       </DialogTrigger>
-      <DialogContent className="max-w-md">
-        <DialogHeader>
+
+      {/* p-0 + flex col + max-h so header/footer stay fixed and only the list scrolls */}
+      <DialogContent className="max-w-md flex flex-col gap-0 p-0 max-h-[90dvh] overflow-hidden">
+
+        {/* Fixed header — pr-10 avoids overlap with the close button */}
+        <div className="shrink-0 px-4 pt-4 pb-3 pr-10 border-b border-border">
           <DialogTitle className="text-base">
             {modoCorreccion ? "Corregir estado del caso" : "Avanzar estado del caso"}
           </DialogTitle>
-        </DialogHeader>
+        </div>
 
-        <form onSubmit={handleSubmit} className="space-y-4 pt-1">
-          {/* Corrección warning */}
-          {modoCorreccion && (
-            <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
-              <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
-              <span>
-                Modo corrección: puedes asignar cualquier estado independiente del flujo normal.
-                Quedará registrado en la auditoría como corrección manual.
-              </span>
-            </div>
-          )}
+        <form onSubmit={handleSubmit} className="flex flex-col min-h-0 flex-1 overflow-hidden">
 
-          {/* Estado options */}
-          {modoCorreccion ? (
-            // In correction mode: show states grouped by phase
-            <div className="space-y-3">
-              {FASES.map((fase) => {
-                const faseOpciones = fase.estados.filter((e) => e !== estadoActual);
-                if (faseOpciones.length === 0) return null;
-                return (
-                  <div key={fase.label}>
-                    <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
-                      {fase.label}
-                    </p>
-                    <div className="space-y-1">
-                      {faseOpciones.map((est) => (
-                        <EstadoButton
-                          key={est}
-                          estado={est}
-                          selected={selectedEstado === est}
-                          onSelect={() => { setSelectedEstado(est); setMotivoTermino(""); }}
-                        />
-                      ))}
+          {/* Scrollable body */}
+          <div className="flex-1 overflow-y-auto min-h-0 px-4 py-4 space-y-4">
+
+            {/* Corrección warning */}
+            {modoCorreccion && (
+              <div className="flex items-start gap-2 rounded-lg border border-amber-200 bg-amber-50 px-3 py-2.5 text-xs text-amber-800">
+                <AlertTriangle className="mt-0.5 size-3.5 shrink-0" />
+                <span>
+                  Modo corrección: puedes asignar cualquier estado independiente del flujo normal.
+                  Quedará registrado en la auditoría como corrección manual.
+                </span>
+              </div>
+            )}
+
+            {/* Estado options */}
+            {modoCorreccion ? (
+              <div className="space-y-3">
+                {FASES.map((fase) => {
+                  const faseOpciones = fase.estados.filter((e) => e !== estadoActual);
+                  if (faseOpciones.length === 0) return null;
+                  return (
+                    <div key={fase.label}>
+                      <p className="mb-1.5 text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+                        {fase.label}
+                      </p>
+                      <div className="space-y-1">
+                        {faseOpciones.map((est) => (
+                          <EstadoButton
+                            key={est}
+                            estado={est}
+                            selected={selectedEstado === est}
+                            onSelect={() => { setSelectedEstado(est); setMotivoTermino(""); }}
+                          />
+                        ))}
+                      </div>
                     </div>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            // Normal mode: flat list of valid transitions
-            <div className="space-y-1.5">
-              {opciones.length === 0 ? (
-                <p className="py-3 text-center text-sm text-(--ink-600)">
-                  No hay transiciones disponibles.
-                </p>
-              ) : (
-                opciones.map((est) => (
-                  <EstadoButton
-                    key={est}
-                    estado={est}
-                    selected={selectedEstado === est}
-                    onSelect={() => { setSelectedEstado(est); setMotivoTermino(""); }}
-                  />
-                ))
-              )}
-            </div>
-          )}
+                  );
+                })}
+              </div>
+            ) : (
+              <div className="space-y-1.5">
+                {opciones.length === 0 ? (
+                  <p className="py-3 text-center text-sm text-(--ink-600)">
+                    No hay transiciones disponibles.
+                  </p>
+                ) : (
+                  opciones.map((est) => (
+                    <EstadoButton
+                      key={est}
+                      estado={est}
+                      selected={selectedEstado === est}
+                      onSelect={() => { setSelectedEstado(est); setMotivoTermino(""); }}
+                    />
+                  ))
+                )}
+              </div>
+            )}
 
-          {/* Motivo de término (solo cuando se selecciona TERMINADO) */}
-          {selectedEstado === "TERMINADO" && (
-            <div className="space-y-1.5">
-              <label className="block text-sm font-medium text-(--ink-600)">
-                Motivo de término <span className="text-destructive">*</span>
-              </label>
-              <Select
-                value={motivoTermino}
-                onValueChange={(v) => setMotivoTermino((v ?? "") as MotivoTermino | "")}
-              >
-                <SelectTrigger className="h-9 w-full text-sm">
-                  <span className="flex-1 text-left text-sm">
-                    {motivoTermino
-                      ? MOTIVOS.find((m) => m.value === motivoTermino)?.label
-                      : <span className="text-muted-foreground">Seleccionar motivo…</span>
-                    }
-                  </span>
-                </SelectTrigger>
-                <SelectContent>
-                  {MOTIVOS.map((m) => (
-                    <SelectItem key={m.value} value={m.value} className="text-sm">
-                      {m.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          )}
+            {/* Motivo de término */}
+            {selectedEstado === "TERMINADO" && (
+              <div className="space-y-1.5">
+                <label className="block text-sm font-medium text-(--ink-600)">
+                  Motivo de término <span className="text-destructive">*</span>
+                </label>
+                <Select
+                  value={motivoTermino}
+                  onValueChange={(v) => setMotivoTermino((v ?? "") as MotivoTermino | "")}
+                >
+                  <SelectTrigger className="h-9 w-full text-sm">
+                    <span className="flex-1 text-left text-sm">
+                      {motivoTermino
+                        ? MOTIVOS.find((m) => m.value === motivoTermino)?.label
+                        : <span className="text-muted-foreground">Seleccionar motivo…</span>
+                      }
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    {MOTIVOS.map((m) => (
+                      <SelectItem key={m.value} value={m.value} className="text-sm">
+                        {m.label}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
 
-          {/* Error */}
-          {error && (
-            <p className="text-xs text-destructive">
-              {error instanceof Error ? error.message : "Error al cambiar el estado."}
-            </p>
-          )}
+            {/* Error */}
+            {error && (
+              <p className="text-xs text-destructive">
+                {error instanceof Error ? error.message : "Error al cambiar el estado."}
+              </p>
+            )}
+          </div>
 
-          {/* Actions */}
-          <div className="flex items-center justify-between gap-2 pt-1">
+          {/* Fixed footer */}
+          <div className="shrink-0 border-t border-border px-4 pt-3 pb-4 flex items-center justify-between gap-2">
             {!modoCorreccion ? (
               <button
                 type="button"
