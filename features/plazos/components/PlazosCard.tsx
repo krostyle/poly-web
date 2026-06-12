@@ -8,13 +8,14 @@ import { usePlazosCaso, useCumplirPlazo } from "@/features/plazos/hooks/usePlazo
 import type { Semaforo } from "@/lib/api/types";
 
 const TIPO_LABELS: Record<string, string> = {
-  ANALISIS_INTERNO:   "Análisis interno",
-  RESTITUCION:        "Restitución",
-  ASIGNACION:         "Asignación",
-  PRECAUTELAR:        "Medida precautelar",
-  DEMANDA:            "Demanda",
-  RESTITUCION_RECHAZO:"Rechazo restitución",
-  RESPUESTA_DENUNCIA: "Respuesta denuncia",
+  ANALISIS_INTERNO:    "Análisis interno",
+  RESTITUCION:         "Restitución",
+  ASIGNACION:          "Asignación",
+  PRECAUTELAR:         "Medida precautelar",
+  RESOLUCION_JPL:      "Resolución JPL",
+  DEMANDA:             "Demanda banco",
+  RESTITUCION_RECHAZO: "Rechazo restitución",
+  RESPUESTA_DENUNCIA:  "Respuesta denuncia",
 };
 
 interface PlazosCardProps {

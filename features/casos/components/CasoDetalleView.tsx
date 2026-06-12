@@ -41,7 +41,8 @@ import { useEliminarCaso } from "@/features/casos/hooks/useEliminarCaso";
 import { useUsuariosBanco } from "@/features/bancos/hooks/useUsuariosBanco";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { TribunalCombobox } from "@/features/tribunales/components/TribunalCombobox";
-import type { HistorialEntry, Estado, EstadoDenuncia, Caso, Cliente } from "@/lib/api/types";
+import { CasoFlowView } from "./CasoFlowView";
+import type { HistorialEntry, Estado, EstadoDenuncia, Caso, Cliente, ResultadoJPL } from "@/lib/api/types";
 
 interface CasoDetalleViewProps {
   id: string;
@@ -154,14 +155,16 @@ function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
     case "CASO_ACTUALIZADO": {
       const cambios = d.cambios as Record<string, string | null> | undefined;
       const CAMPO_LABELS: Record<string, string> = {
-        abogado:         "Abogado",
-        numero_ot:       "N° OT",
-        estado_denuncia: "Denuncia banco",
-        fecha_denuncia:  "Fecha denuncia",
-        fecha_dj:        "Fecha DJ",
-        numero_rol:      "N° Rol",
-        tribunal:        "Tribunal",
-        region:          "Región",
+        abogado:              "Abogado",
+        numero_ot:            "N° OT",
+        estado_denuncia:      "Denuncia banco",
+        fecha_denuncia:       "Fecha denuncia",
+        fecha_dj:             "Fecha DJ",
+        numero_rol:           "N° Rol",
+        tribunal:             "Tribunal",
+        region:               "Región",
+        resultado_jpl:        "Resultado JPL",
+        fecha_resolucion_jpl: "Fecha resolución JPL",
       };
       const DENUNCIA_LABELS: Record<string, string> = {
         PENDIENTE: "Pendiente", ACOGIDA: "Acogida", RECHAZADA: "Rechazada",
@@ -254,6 +257,8 @@ interface CasoEditState {
   numeroRol: string;
   tribunal: string;
   region: string;
+  resultadoJpl: ResultadoJPL | "";
+  fechaResolucionJpl: string;
 }
 
 const REGIONES_CHILE = [
@@ -499,12 +504,19 @@ function ClienteEditCard({
 
 // ── Datos judiciales card ─────────────────────────────────────────────────────
 
+const RESULTADO_JPL_OPTIONS: { value: ResultadoJPL; label: string }[] = [
+  { value: "ACEPTA_SUSPENSION",  label: "JPL acepta suspensión" },
+  { value: "RECHAZA_SUSPENSION", label: "JPL rechaza suspensión" },
+  { value: "FALLO_FAVORABLE",    label: "Fallo favorable al cliente" },
+  { value: "FALLO_DESFAVORABLE", label: "Fallo desfavorable" },
+];
+
 function DatosJudicialesCard({
   current,
   onChange,
   canEdit,
 }: {
-  current: Pick<CasoEditState, "numeroRol" | "tribunal" | "region">;
+  current: Pick<CasoEditState, "numeroRol" | "tribunal" | "region" | "resultadoJpl" | "fechaResolucionJpl">;
   onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
   canEdit: boolean;
 }) {
@@ -585,6 +597,57 @@ function DatosJudicialesCard({
           ) : (
             <Field label="Tribunal" value={current.tribunal || "—"} />
           )}
+
+          {/* Resultado JPL */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Resultado JPL</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <Select
+                  value={current.resultadoJpl}
+                  onValueChange={(v) => onChange("resultadoJpl", (v ?? "") as ResultadoJPL | "")}
+                >
+                  <SelectTrigger className="h-8 w-full max-w-52 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                    <span className="flex-1 text-left text-sm truncate">
+                      {current.resultadoJpl
+                        ? RESULTADO_JPL_OPTIONS.find((o) => o.value === current.resultadoJpl)?.label
+                        : <span className="text-muted-foreground text-sm">Sin resultado</span>
+                      }
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="" className="text-sm text-muted-foreground">Sin resultado</SelectItem>
+                    {RESULTADO_JPL_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value} className="text-sm">{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </dd>
+            </div>
+          ) : current.resultadoJpl ? (
+            <Field
+              label="Resultado JPL"
+              value={RESULTADO_JPL_OPTIONS.find((o) => o.value === current.resultadoJpl)?.label ?? current.resultadoJpl}
+            />
+          ) : null}
+
+          {/* Fecha resolución JPL */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha resolución JPL</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <DatePicker
+                  value={current.fechaResolucionJpl || undefined}
+                  onChange={(v) => onChange("fechaResolucionJpl", v)}
+                  placeholder="Sin fecha"
+                  toDate={new Date()}
+                  className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+          ) : current.fechaResolucionJpl ? (
+            <Field label="Fecha resolución JPL" value={<span className="tabular-nums">{formatDate(current.fechaResolucionJpl)}</span>} />
+          ) : null}
         </dl>
       </CardContent>
     </Card>
@@ -615,9 +678,11 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
       numeroRol: data?.caso.numeroRol ?? "",
       tribunal: data?.caso.tribunal ?? "",
       region: data?.caso.region ?? "",
+      resultadoJpl: data?.caso.resultadoJpl ?? "",
+      fechaResolucionJpl: data?.caso.fechaResolucionJpl ?? "",
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data?.caso.abogadoId, data?.caso.numeroOt, data?.caso.estadoDenuncia, data?.caso.fechaDenuncia, data?.caso.fechaDj, data?.caso.numeroRol, data?.caso.tribunal, data?.caso.region]
+    [data?.caso.abogadoId, data?.caso.numeroOt, data?.caso.estadoDenuncia, data?.caso.fechaDenuncia, data?.caso.fechaDj, data?.caso.numeroRol, data?.caso.tribunal, data?.caso.region, data?.caso.resultadoJpl, data?.caso.fechaResolucionJpl]
   );
 
   const clienteOriginal = useMemo<ClienteEditState>(
@@ -651,7 +716,9 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
     casoEdit.fechaDj !== casoOriginal.fechaDj ||
     casoEdit.numeroRol !== casoOriginal.numeroRol ||
     casoEdit.tribunal !== casoOriginal.tribunal ||
-    casoEdit.region !== casoOriginal.region;
+    casoEdit.region !== casoOriginal.region ||
+    casoEdit.resultadoJpl !== casoOriginal.resultadoJpl ||
+    casoEdit.fechaResolucionJpl !== casoOriginal.fechaResolucionJpl;
 
   const clienteIsDirty =
     clienteEdit.nombre !== clienteOriginal.nombre ||
@@ -679,6 +746,10 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
         patch.tribunal = casoEdit.tribunal.trim() || undefined;
       if (casoEdit.region !== casoOriginal.region)
         patch.region = casoEdit.region || undefined;
+      if (casoEdit.resultadoJpl !== casoOriginal.resultadoJpl)
+        patch.resultadoJpl = casoEdit.resultadoJpl || undefined;
+      if (casoEdit.fechaResolucionJpl !== casoOriginal.fechaResolucionJpl)
+        patch.fechaResolucionJpl = casoEdit.fechaResolucionJpl || undefined;
       casoMutation.mutate(patch);
     }
     if (clienteIsDirty) {
@@ -810,6 +881,9 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
       {/* Datos judiciales */}
       <DatosJudicialesCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} />
+
+      {/* Flujo del caso */}
+      <CasoFlowView casoId={id} />
 
       {/* Operaciones */}
       <Card className="rounded-xl border-border shadow-none">

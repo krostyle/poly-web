@@ -36,9 +36,16 @@ export type TipoPlazo =
   | "RESTITUCION"
   | "ASIGNACION"
   | "PRECAUTELAR"
+  | "RESOLUCION_JPL"
   | "DEMANDA"
   | "RESTITUCION_RECHAZO"
   | "RESPUESTA_DENUNCIA";
+
+export type ResultadoJPL =
+  | "ACEPTA_SUSPENSION"
+  | "RECHAZA_SUSPENSION"
+  | "FALLO_FAVORABLE"
+  | "FALLO_DESFAVORABLE";
 
 export interface Caso {
   id: string;
@@ -55,8 +62,17 @@ export interface Caso {
   numeroRol?: string;
   tribunal?: string;
   region?: string;
+  resultadoJpl?: ResultadoJPL;
+  fechaResolucionJpl?: string;
   createdAt: string;
   updatedAt: string;
+}
+
+export interface ConfiguracionPlazo {
+  tipo: string;
+  label: string;
+  diasHabiles: number;
+  esDefault: boolean;
 }
 
 export interface Plazo {

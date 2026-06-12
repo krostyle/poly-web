@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry, Estado, EstadoDenuncia } from "./types";
+import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry, Estado, EstadoDenuncia, ResultadoJPL } from "./types";
 
 // Raw snake_case shapes returned by poly-api
 
@@ -44,6 +44,8 @@ interface RawCaso {
   numero_rol: string | null;
   tribunal: string | null;
   region: string | null;
+  resultado_jpl: ResultadoJPL | null;
+  fecha_resolucion_jpl: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -113,6 +115,8 @@ function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
       numeroRol: raw.caso.numero_rol ?? undefined,
       tribunal: raw.caso.tribunal ?? undefined,
       region: raw.caso.region ?? undefined,
+      resultadoJpl: raw.caso.resultado_jpl ?? undefined,
+      fechaResolucionJpl: raw.caso.fecha_resolucion_jpl ?? undefined,
       createdAt: raw.caso.created_at,
       updatedAt: raw.caso.updated_at,
     },
@@ -196,6 +200,8 @@ export async function actualizarCaso(
     numeroRol?: string;
     tribunal?: string;
     region?: string;
+    resultadoJpl?: ResultadoJPL;
+    fechaResolucionJpl?: string;
   },
   token: string
 ): Promise<CasoDetalle> {
@@ -208,6 +214,8 @@ export async function actualizarCaso(
   if (patch.numeroRol !== undefined) body.numero_rol = patch.numeroRol;
   if (patch.tribunal !== undefined) body.tribunal = patch.tribunal;
   if (patch.region !== undefined) body.region = patch.region;
+  if (patch.resultadoJpl !== undefined) body.resultado_jpl = patch.resultadoJpl;
+  if (patch.fechaResolucionJpl !== undefined) body.fecha_resolucion_jpl = patch.fechaResolucionJpl;
   const raw = await apiClient.request<RawCasoDetalle>(`/v1/casos/${id}`, {
     method: "PATCH",
     body: JSON.stringify(body),
