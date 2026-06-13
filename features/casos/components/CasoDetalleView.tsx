@@ -553,26 +553,32 @@ function DatosJudicialesCard({
             <div className="flex items-center justify-between py-2.5 border-b border-border">
               <dt className="text-sm text-(--ink-600) shrink-0">Región</dt>
               <dd className="ml-3 min-w-0 flex-1 flex justify-end">
-                <Select
-                  value={current.region}
-                  onValueChange={(v) => onChange("region", v ?? "")}
-                >
-                  <SelectTrigger className="h-8 w-full max-w-48 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
-                    <span className="flex-1 text-left text-sm truncate">
-                      {current.region || <span className="text-muted-foreground text-sm">Sin región</span>}
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="" className="text-sm text-muted-foreground">
-                      Sin región
-                    </SelectItem>
-                    {REGIONES_CHILE.map((r) => (
-                      <SelectItem key={r} value={r} className="text-sm">
-                        {r}
+                {current.tribunal ? (
+                  <span className="text-sm text-(--navy-900) truncate max-w-48">
+                    {current.region || "—"}
+                  </span>
+                ) : (
+                  <Select
+                    value={current.region}
+                    onValueChange={(v) => onChange("region", v ?? "")}
+                  >
+                    <SelectTrigger className="h-8 w-full max-w-48 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                      <span className="flex-1 text-left text-sm truncate">
+                        {current.region || <span className="text-muted-foreground text-sm">Sin región</span>}
+                      </span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="" className="text-sm text-muted-foreground">
+                        Sin región
                       </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
+                      {REGIONES_CHILE.map((r) => (
+                        <SelectItem key={r} value={r} className="text-sm">
+                          {r}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
               </dd>
             </div>
           ) : (
@@ -601,14 +607,14 @@ function DatosJudicialesCard({
 
           {/* Resultado JPL */}
           {canEdit ? (
-            <div className="flex items-center justify-between py-2.5 border-b border-border">
-              <dt className="text-sm text-(--ink-600) shrink-0">Resultado JPL</dt>
-              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+            <div className="py-2.5 border-b border-border space-y-1.5">
+              <dt className="text-sm text-(--ink-600)">Resultado JPL</dt>
+              <dd>
                 <Select
                   value={current.resultadoJpl}
                   onValueChange={(v) => onChange("resultadoJpl", (v ?? "") as ResultadoJPL | "")}
                 >
-                  <SelectTrigger className="h-8 w-full max-w-52 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                  <SelectTrigger className="h-8 w-full text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
                     <span className="flex-1 text-left text-sm truncate">
                       {current.resultadoJpl
                         ? RESULTADO_JPL_OPTIONS.find((o) => o.value === current.resultadoJpl)?.label
