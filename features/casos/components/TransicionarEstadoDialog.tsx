@@ -101,11 +101,18 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, resultadoJpl }:
         // en el mismo acto — no implica resolución JPL
         if (estadoActual === "INGRESO" && e === "JUDICIAL")
           return { estado: e, desc: "El tribunal exige presentar la demanda y la medida precautoria en el mismo acto" };
-        // Guía informativa basada en resultado JPL (no bloquea)
-        if (estadoActual === "PREJUDICIAL" && resultadoJpl && e === "PAGO_NORMATIVO" && resultadoJpl !== "RECHAZA_SUSPENSION")
-          return { estado: e, bloqueado: "El JPL aceptó la suspensión — la vía Pago Normativo corresponde cuando la rechaza." };
-        if (estadoActual === "PREJUDICIAL" && resultadoJpl && e === "JUDICIAL" && resultadoJpl !== "ACEPTA_SUSPENSION")
-          return { estado: e, bloqueado: "El JPL rechazó la suspensión — la vía Judicial corresponde cuando la acepta." };
+        if (estadoActual === "PREJUDICIAL" && e === "PAGO_NORMATIVO") {
+          if (!resultadoJpl)
+            return { estado: e, bloqueado: "Se requiere registrar la resolución del JPL antes de avanzar." };
+          if (resultadoJpl !== "RECHAZA_SUSPENSION")
+            return { estado: e, bloqueado: "El JPL aceptó la suspensión — la vía Pago Normativo corresponde cuando la rechaza." };
+        }
+        if (estadoActual === "PREJUDICIAL" && e === "JUDICIAL") {
+          if (!resultadoJpl)
+            return { estado: e, bloqueado: "Se requiere registrar la resolución del JPL antes de avanzar." };
+          if (resultadoJpl !== "ACEPTA_SUSPENSION")
+            return { estado: e, bloqueado: "El JPL rechazó la suspensión — la vía Judicial corresponde cuando la acepta." };
+        }
         return { estado: e };
       });
 
