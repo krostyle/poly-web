@@ -24,6 +24,7 @@ export function useActualizarCaso(casoId: string) {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["casos", casoId] });
+      queryClient.invalidateQueries({ queryKey: ["plazos", casoId] });
     },
   });
 }
