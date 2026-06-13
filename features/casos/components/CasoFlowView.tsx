@@ -37,10 +37,10 @@ const TIPO_PLAZO_LABELS: Record<TipoPlazo, string> = {
 };
 
 const RESULTADO_JPL_LABELS: Record<ResultadoJPL, string> = {
-  ACEPTA_SUSPENSION:  "JPL acepta suspensión",
-  RECHAZA_SUSPENSION: "JPL rechaza suspensión",
+  ACEPTA_SUSPENSION:  "JPL acepta suspensión — proceso continúa vía judicial",
+  RECHAZA_SUSPENSION: "JPL rechaza suspensión — banco debe devolver el monto",
   FALLO_FAVORABLE:    "Fallo favorable al cliente",
-  FALLO_DESFAVORABLE: "Fallo desfavorable",
+  FALLO_DESFAVORABLE: "Fallo desfavorable al cliente",
 };
 
 interface FlowNodeDef {
@@ -64,7 +64,7 @@ const FLOW_NODES: FlowNodeDef[] = [
   {
     state: "PREJUDICIAL",
     label: "Prejudicial",
-    description: "Medida precautoria ante el JPL",
+    description: "Medida precautoria presentada ante el JPL — obligatoria al ingresar el caso",
     Icon: Scale,
     plazoTypes: ["PRECAUTELAR", "RESOLUCION_JPL"],
     onlyIfVisited: true,
@@ -192,7 +192,7 @@ function BranchIndicator({ resultadoJpl }: { resultadoJpl?: ResultadoJPL }) {
       <div className="rounded-xl border border-border bg-(--slate-100)/50 p-3">
         <div className="flex items-center gap-1.5 mb-2.5">
           <GitBranch className="size-3.5 text-(--ink-600)" />
-          <span className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">Resolución JPL</span>
+          <span className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">Resolución sobre suspensión del monto</span>
         </div>
         <div className="grid grid-cols-2 gap-2">
           <div className={cn(
@@ -203,9 +203,9 @@ function BranchIndicator({ resultadoJpl }: { resultadoJpl?: ResultadoJPL }) {
                 ? "border-border/40 opacity-40"
                 : "border-border/60 bg-white"
           )}>
-            <p className="text-xs font-semibold text-(--navy-900)">Acepta suspensión</p>
-            <p className="mt-0.5 text-[11px] text-(--ink-600)">→ Banco debe demandar en 10 días</p>
-            <p className="mt-0.5 text-[11px] text-(--ink-600)">→ Continúa vía judicial</p>
+            <p className="text-xs font-semibold text-(--navy-900)">JPL acepta la suspensión</p>
+            <p className="mt-0.5 text-[11px] text-(--ink-600)">El banco mantiene el monto suspendido</p>
+            <p className="mt-0.5 text-[11px] text-(--ink-600)">→ Debe demandar formalmente en 10 días</p>
           </div>
           <div className={cn(
             "rounded-lg border p-2.5 transition-colors",
@@ -215,8 +215,8 @@ function BranchIndicator({ resultadoJpl }: { resultadoJpl?: ResultadoJPL }) {
                 ? "border-border/40 opacity-40"
                 : "border-border/60 bg-white"
           )}>
-            <p className="text-xs font-semibold text-(--navy-900)">Rechaza suspensión</p>
-            <p className="mt-0.5 text-[11px] text-(--ink-600)">→ Banco debe pagar de inmediato</p>
+            <p className="text-xs font-semibold text-(--navy-900)">JPL rechaza la suspensión</p>
+            <p className="mt-0.5 text-[11px] text-(--ink-600)">El banco debe devolver el monto al cliente</p>
             <p className="mt-0.5 text-[11px] text-(--ink-600)">→ Pago normativo</p>
           </div>
         </div>

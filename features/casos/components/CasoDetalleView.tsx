@@ -505,10 +505,10 @@ function ClienteEditCard({
 // ── Datos judiciales card ─────────────────────────────────────────────────────
 
 const RESULTADO_JPL_OPTIONS: { value: ResultadoJPL; label: string }[] = [
-  { value: "ACEPTA_SUSPENSION",  label: "JPL acepta suspensión" },
-  { value: "RECHAZA_SUSPENSION", label: "JPL rechaza suspensión" },
+  { value: "ACEPTA_SUSPENSION",  label: "Acepta suspensión — continúa vía judicial" },
+  { value: "RECHAZA_SUSPENSION", label: "Rechaza suspensión — banco devuelve el monto" },
   { value: "FALLO_FAVORABLE",    label: "Fallo favorable al cliente" },
-  { value: "FALLO_DESFAVORABLE", label: "Fallo desfavorable" },
+  { value: "FALLO_DESFAVORABLE", label: "Fallo desfavorable al cliente" },
 ];
 
 function DatosJudicialesCard({
