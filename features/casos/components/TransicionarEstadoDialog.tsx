@@ -73,26 +73,15 @@ const MOTIVOS: { value: MotivoTermino; label: string }[] = [
   { value: "ABANDONO_PROCEDIMIENTO",         label: "Abandono de procedimiento" },
 ];
 
-// ── Prerequisitos bloqueantes por transición ──────────────────────────────────
-function getPrejudicialBlockReason(
-  estadoDenuncia: EstadoDenuncia,
-  fechaDenuncia?: string | null,
-): string | null {
-  if (!fechaDenuncia) return "Registra la fecha de denuncia del banco antes de solicitar la medida precautoria.";
-  if (estadoDenuncia === "PENDIENTE") return "La denuncia del banco debe estar resuelta (acogida o rechazada) antes de solicitar la medida precautoria.";
-  return null;
-}
-
 // ── Props ────────────────────────────────────────────────────────────────────
 interface Props {
   casoId: string;
   estadoActual: Estado;
   estadoDenuncia: EstadoDenuncia;
-  fechaDenuncia?: string | null;
 }
 
 // ── Componente ───────────────────────────────────────────────────────────────
-export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia, fechaDenuncia }: Props) {
+export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia }: Props) {
   const [open, setOpen] = useState(false);
   const [selectedEstado, setSelectedEstado] = useState<Estado | null>(null);
   const [motivoTermino, setMotivoTermino] = useState<MotivoTermino | "">("");
@@ -108,11 +97,6 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia,
         .filter((e) => e !== estadoActual)
         .map((e) => ({ estado: e }))
     : siguientesBase.map((e) => {
-        // INGRESO → PREJUDICIAL: requires fecha_denuncia set and denuncia resolved
-        if (estadoActual === "INGRESO" && e === "PREJUDICIAL") {
-          const reason = getPrejudicialBlockReason(estadoDenuncia, fechaDenuncia);
-          if (reason) return { estado: e, bloqueado: reason };
-        }
         // PREJUDICIAL → PAGO_NORMATIVO: only if bank rejected denuncia
         if (estadoActual === "PREJUDICIAL" && e === "PAGO_NORMATIVO" && estadoDenuncia !== "RECHAZADA")
           return { estado: e, bloqueado: "El banco debe haber rechazado la denuncia para tomar esta vía." };
