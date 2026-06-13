@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronsUpDown, Check } from "lucide-react";
+import { ChevronsUpDown, Check, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { useTribunales } from "@/features/tribunales/hooks/useTribunales";
@@ -11,10 +11,11 @@ interface TribunalComboboxProps {
   value: string;
   regionFilter?: string; // pre-filter by selected region; user can still search to override
   onSelect: (nombre: string, region: string) => void;
+  onClear?: () => void;
   className?: string;
 }
 
-export function TribunalCombobox({ value, regionFilter, onSelect, className }: TribunalComboboxProps) {
+export function TribunalCombobox({ value, regionFilter, onSelect, onClear, className }: TribunalComboboxProps) {
   const [open, setOpen] = useState(false);
   const [search, setSearch] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -80,10 +81,21 @@ export function TribunalCombobox({ value, regionFilter, onSelect, className }: T
           className
         )}
       >
-        <span className="flex-1 leading-snug">
+        <span className="flex-1 leading-snug truncate">
           {value || <span className="font-normal text-muted-foreground">—</span>}
         </span>
-        <ChevronsUpDown className="size-3.5 shrink-0 self-center text-muted-foreground" />
+        {value && onClear ? (
+          <button
+            type="button"
+            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClear(); }}
+            className="shrink-0 self-center rounded p-0.5 text-muted-foreground hover:text-(--navy-900) hover:bg-(--slate-100) transition-colors"
+            aria-label="Quitar tribunal"
+          >
+            <X className="size-3.5" />
+          </button>
+        ) : (
+          <ChevronsUpDown className="size-3.5 shrink-0 self-center text-muted-foreground" />
+        )}
       </PopoverTrigger>
 
       <PopoverContent

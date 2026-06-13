@@ -553,32 +553,26 @@ function DatosJudicialesCard({
             <div className="flex items-center justify-between py-2.5 border-b border-border">
               <dt className="text-sm text-(--ink-600) shrink-0">Región</dt>
               <dd className="ml-3 min-w-0 flex-1 flex justify-end">
-                {current.tribunal ? (
-                  <span className="text-sm text-(--navy-900) truncate max-w-48">
-                    {current.region || "—"}
-                  </span>
-                ) : (
-                  <Select
-                    value={current.region}
-                    onValueChange={(v) => onChange("region", v ?? "")}
-                  >
-                    <SelectTrigger className="h-8 w-full max-w-48 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
-                      <span className="flex-1 text-left text-sm truncate">
-                        {current.region || <span className="text-muted-foreground text-sm">Sin región</span>}
-                      </span>
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="" className="text-sm text-muted-foreground">
-                        Sin región
+                <Select
+                  value={current.region || "__none__"}
+                  onValueChange={(v) => onChange("region", v === "__none__" ? "" : (v ?? ""))}
+                >
+                  <SelectTrigger className="h-8 w-full max-w-48 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                    <span className="flex-1 text-left text-sm truncate">
+                      {current.region || <span className="text-muted-foreground text-sm">Sin región</span>}
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__" className="text-sm text-muted-foreground">
+                      Sin región
+                    </SelectItem>
+                    {REGIONES_CHILE.map((r) => (
+                      <SelectItem key={r} value={r} className="text-sm">
+                        {r}
                       </SelectItem>
-                      {REGIONES_CHILE.map((r) => (
-                        <SelectItem key={r} value={r} className="text-sm">
-                          {r}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                )}
+                    ))}
+                  </SelectContent>
+                </Select>
               </dd>
             </div>
           ) : (
@@ -597,6 +591,10 @@ function DatosJudicialesCard({
                     onChange("tribunal", nombre);
                     onChange("region", region);
                   }}
+                  onClear={() => {
+                    onChange("tribunal", "");
+                    onChange("region", "");
+                  }}
                   className="w-full max-w-64"
                 />
               </dd>
@@ -611,8 +609,8 @@ function DatosJudicialesCard({
               <dt className="text-sm text-(--ink-600)">Resultado JPL</dt>
               <dd>
                 <Select
-                  value={current.resultadoJpl}
-                  onValueChange={(v) => onChange("resultadoJpl", (v ?? "") as ResultadoJPL | "")}
+                  value={current.resultadoJpl || "__none__"}
+                  onValueChange={(v) => onChange("resultadoJpl", (v === "__none__" ? "" : (v ?? "")) as ResultadoJPL | "")}
                 >
                   <SelectTrigger className="h-8 w-full text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
                     <span className="flex-1 text-left text-sm truncate">
@@ -623,7 +621,7 @@ function DatosJudicialesCard({
                     </span>
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="" className="text-sm text-muted-foreground">Sin resultado</SelectItem>
+                    <SelectItem value="__none__" className="text-sm text-muted-foreground">Sin resultado</SelectItem>
                     {RESULTADO_JPL_OPTIONS.map((o) => (
                       <SelectItem key={o.value} value={o.value} className="text-sm">{o.label}</SelectItem>
                     ))}
