@@ -50,6 +50,26 @@ export type ResultadoSentencia =
   | "FAVORABLE_CLIENTE"
   | "PARCIAL";
 
+// Medida precautoria result when JPL rejects: bank pays an "abono"
+export type AdmisibilidadDemanda = "ADMISIBLE" | "NO_ADMISIBLE";
+
+export type ResultadoReposicion = "ACOGE" | "RECHAZA";
+
+// AUTO_PARA_FALLO = judge declares the case ready for sentencing (Art. 17 Ley JPL, 15-day deadline)
+export type ResultadoAudiencia = "TERMINO" | "AVENIMIENTO" | "AUTO_PARA_FALLO";
+
+// Dolo under Ley 20.009 Art. 2: bank alleges intentional misconduct or gross negligence by the client
+export type Dolo = "DOLO" | "CULPA_GRAVE";
+
+export type TipoArtefacto =
+  | "CUENTA_CORRIENTE"
+  | "CUENTA_VISTA"
+  | "TARJETA_CREDITO"
+  | "TARJETA_DEBITO"
+  | "LINEA_CREDITO"
+  | "CUENTA_AHORRO"
+  | "OTRO";
+
 export interface Caso {
   id: string;
   estudioId: string;
@@ -58,22 +78,39 @@ export interface Caso {
   abogadoId?: string;
   numeroOt?: string;
   estado: Estado;
-  fechaDj: string; // ISO date — obligatoria
+  fechaDj: string;
   fechaDenuncia?: string;
   estadoDenuncia: EstadoDenuncia;
   motivoTermino?: MotivoTermino;
-  numeroRol?: string;
+  // Caso-level context
+  montoReclamado?: number;
+  dolo?: Dolo;
+  tipoArtefacto?: TipoArtefacto;
+  // Medida Precautoria (PREJUDICIAL)
+  rolMp?: string;
   tribunal?: string;
   region?: string;
   resultadoJpl?: ResultadoJPL;
   fechaResolucionJpl?: string;
   fechaMedidaPrecautoria?: string;
+  abono: boolean;
+  montoAbono?: number;
+  // Demanda (JUDICIAL)
+  rolDemanda?: string;
   fechaDemanda?: string;
+  admisibilidadDemanda?: AdmisibilidadDemanda;
+  reposicionInterpuesta: boolean;
+  resultadoReposicion?: ResultadoReposicion;
   fechaNotificacionDemanda?: string;
+  // Audiencia
+  fechaAudiencia?: string;
+  resultadoAudiencia?: ResultadoAudiencia;
+  // Sentencia
   fechaSentencia?: string;
   resultadoSentencia?: ResultadoSentencia;
   sentenciaApelada: boolean;
   sentenciaEjecutoriada: boolean;
+  // Segunda instancia
   rolSegundaInstancia?: string;
   corteApelaciones?: string;
   fechaFalloCorte?: string;
@@ -123,7 +160,7 @@ export interface CasoListItem {
   abogadoId?: string;
   numeroOt?: string;
   estado: Estado;
-  fechaDj: string; // obligatoria
+  fechaDj: string;
   estadoDenuncia: EstadoDenuncia;
   totalCLP: number;
   createdAt: string;
@@ -147,7 +184,7 @@ export interface CrearCasoPayload {
   clienteRut: string;
   clienteNombre: string;
   clienteContacto?: string;
-  fechaDj: string; // obligatoria
+  fechaDj: string;
 }
 
 export interface HistorialEntry {

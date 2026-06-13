@@ -1,7 +1,9 @@
 import { apiClient } from "./client";
-import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry, Estado, EstadoDenuncia, ResultadoJPL, ResultadoSentencia } from "./types";
-
-// Raw snake_case shapes returned by poly-api
+import type {
+  CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry,
+  Estado, EstadoDenuncia, ResultadoJPL, ResultadoSentencia,
+  AdmisibilidadDemanda, ResultadoReposicion, ResultadoAudiencia, Dolo, TipoArtefacto,
+} from "./types";
 
 interface RawCasoListItem {
   id: string;
@@ -41,18 +43,35 @@ interface RawCaso {
   fecha_denuncia: string | null;
   estado_denuncia: EstadoDenuncia;
   motivo_termino: string | null;
-  numero_rol: string | null;
+  // Caso context
+  monto_reclamado: number | null;
+  dolo: Dolo | null;
+  tipo_artefacto: TipoArtefacto | null;
+  // MP
+  rol_mp: string | null;
   tribunal: string | null;
   region: string | null;
   resultado_jpl: ResultadoJPL | null;
   fecha_resolucion_jpl: string | null;
   fecha_medida_precautoria: string | null;
+  abono: boolean;
+  monto_abono: number | null;
+  // Demanda
+  rol_demanda: string | null;
   fecha_demanda: string | null;
+  admisibilidad_demanda: AdmisibilidadDemanda | null;
+  reposicion_interpuesta: boolean;
+  resultado_reposicion: ResultadoReposicion | null;
   fecha_notificacion_demanda: string | null;
+  // Audiencia
+  fecha_audiencia: string | null;
+  resultado_audiencia: ResultadoAudiencia | null;
+  // Sentencia
   fecha_sentencia: string | null;
   resultado_sentencia: ResultadoSentencia | null;
   sentencia_apelada: boolean;
   sentencia_ejecutoriada: boolean;
+  // Segunda instancia
   rol_segunda_instancia: string | null;
   corte_apelaciones: string | null;
   fecha_fallo_corte: string | null;
@@ -124,14 +143,25 @@ function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
       fechaDenuncia: raw.caso.fecha_denuncia ?? undefined,
       estadoDenuncia: raw.caso.estado_denuncia,
       motivoTermino: (raw.caso.motivo_termino ?? undefined) as import("./types").MotivoTermino | undefined,
-      numeroRol: raw.caso.numero_rol ?? undefined,
+      montoReclamado: raw.caso.monto_reclamado ?? undefined,
+      dolo: raw.caso.dolo ?? undefined,
+      tipoArtefacto: raw.caso.tipo_artefacto ?? undefined,
+      rolMp: raw.caso.rol_mp ?? undefined,
       tribunal: raw.caso.tribunal ?? undefined,
       region: raw.caso.region ?? undefined,
       resultadoJpl: raw.caso.resultado_jpl ?? undefined,
       fechaResolucionJpl: raw.caso.fecha_resolucion_jpl ?? undefined,
       fechaMedidaPrecautoria: raw.caso.fecha_medida_precautoria ?? undefined,
+      abono: raw.caso.abono,
+      montoAbono: raw.caso.monto_abono ?? undefined,
+      rolDemanda: raw.caso.rol_demanda ?? undefined,
       fechaDemanda: raw.caso.fecha_demanda ?? undefined,
+      admisibilidadDemanda: raw.caso.admisibilidad_demanda ?? undefined,
+      reposicionInterpuesta: raw.caso.reposicion_interpuesta,
+      resultadoReposicion: raw.caso.resultado_reposicion ?? undefined,
       fechaNotificacionDemanda: raw.caso.fecha_notificacion_demanda ?? undefined,
+      fechaAudiencia: raw.caso.fecha_audiencia ?? undefined,
+      resultadoAudiencia: raw.caso.resultado_audiencia ?? undefined,
       fechaSentencia: raw.caso.fecha_sentencia ?? undefined,
       resultadoSentencia: raw.caso.resultado_sentencia ?? undefined,
       sentenciaApelada: raw.caso.sentencia_apelada,
@@ -221,18 +251,35 @@ export async function actualizarCaso(
     estadoDenuncia?: EstadoDenuncia;
     fechaDenuncia?: string;
     fechaDj?: string;
-    numeroRol?: string;
-    tribunal?: string;       // "" = limpiar
-    region?: string;         // "" = limpiar
+    // Caso context
+    montoReclamado?: number;
+    dolo?: Dolo | "";
+    tipoArtefacto?: TipoArtefacto | "";
+    // MP
+    rolMp?: string;
+    tribunal?: string;
+    region?: string;
     resultadoJpl?: ResultadoJPL | "";
     fechaResolucionJpl?: string;
     fechaMedidaPrecautoria?: string;
+    abono?: boolean;
+    montoAbono?: number;
+    // Demanda
+    rolDemanda?: string;
     fechaDemanda?: string;
+    admisibilidadDemanda?: AdmisibilidadDemanda | "";
+    reposicionInterpuesta?: boolean;
+    resultadoReposicion?: ResultadoReposicion | "";
     fechaNotificacionDemanda?: string;
+    // Audiencia
+    fechaAudiencia?: string;
+    resultadoAudiencia?: ResultadoAudiencia | "";
+    // Sentencia
     fechaSentencia?: string;
     resultadoSentencia?: ResultadoSentencia | "";
     sentenciaApelada?: boolean;
     sentenciaEjecutoriada?: boolean;
+    // Segunda instancia
     rolSegundaInstancia?: string;
     corteApelaciones?: string;
     fechaFalloCorte?: string;
@@ -247,14 +294,25 @@ export async function actualizarCaso(
   if (patch.estadoDenuncia !== undefined) body.estado_denuncia = patch.estadoDenuncia;
   if (patch.fechaDenuncia !== undefined) body.fecha_denuncia = patch.fechaDenuncia;
   if (patch.fechaDj !== undefined) body.fecha_dj = patch.fechaDj;
-  if (patch.numeroRol !== undefined) body.numero_rol = patch.numeroRol;
+  if (patch.montoReclamado !== undefined) body.monto_reclamado = patch.montoReclamado;
+  if (patch.dolo !== undefined) body.dolo = patch.dolo;
+  if (patch.tipoArtefacto !== undefined) body.tipo_artefacto = patch.tipoArtefacto;
+  if (patch.rolMp !== undefined) body.rol_mp = patch.rolMp;
   if (patch.tribunal !== undefined) body.tribunal = patch.tribunal;
   if (patch.region !== undefined) body.region = patch.region;
   if (patch.resultadoJpl !== undefined) body.resultado_jpl = patch.resultadoJpl;
   if (patch.fechaResolucionJpl !== undefined) body.fecha_resolucion_jpl = patch.fechaResolucionJpl;
   if (patch.fechaMedidaPrecautoria !== undefined) body.fecha_medida_precautoria = patch.fechaMedidaPrecautoria;
+  if (patch.abono !== undefined) body.abono = patch.abono;
+  if (patch.montoAbono !== undefined) body.monto_abono = patch.montoAbono;
+  if (patch.rolDemanda !== undefined) body.rol_demanda = patch.rolDemanda;
   if (patch.fechaDemanda !== undefined) body.fecha_demanda = patch.fechaDemanda;
+  if (patch.admisibilidadDemanda !== undefined) body.admisibilidad_demanda = patch.admisibilidadDemanda;
+  if (patch.reposicionInterpuesta !== undefined) body.reposicion_interpuesta = patch.reposicionInterpuesta;
+  if (patch.resultadoReposicion !== undefined) body.resultado_reposicion = patch.resultadoReposicion;
   if (patch.fechaNotificacionDemanda !== undefined) body.fecha_notificacion_demanda = patch.fechaNotificacionDemanda;
+  if (patch.fechaAudiencia !== undefined) body.fecha_audiencia = patch.fechaAudiencia;
+  if (patch.resultadoAudiencia !== undefined) body.resultado_audiencia = patch.resultadoAudiencia;
   if (patch.fechaSentencia !== undefined) body.fecha_sentencia = patch.fechaSentencia;
   if (patch.resultadoSentencia !== undefined) body.resultado_sentencia = patch.resultadoSentencia;
   if (patch.sentenciaApelada !== undefined) body.sentencia_apelada = patch.sentenciaApelada;

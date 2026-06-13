@@ -2,6 +2,10 @@
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { useAuth } from "@clerk/nextjs";
 import { actualizarCaso } from "@/lib/api/casos";
+import type {
+  EstadoDenuncia, ResultadoJPL, ResultadoSentencia,
+  AdmisibilidadDemanda, ResultadoReposicion, ResultadoAudiencia, Dolo, TipoArtefacto,
+} from "@/lib/api/types";
 
 export function useActualizarCaso(casoId: string) {
   const { getToken } = useAuth();
@@ -10,25 +14,36 @@ export function useActualizarCaso(casoId: string) {
     mutationFn: async (patch: {
       abogadoId?: string;
       numeroOt?: string;
-      estadoDenuncia?: import("@/lib/api/types").EstadoDenuncia;
+      estadoDenuncia?: EstadoDenuncia;
       fechaDenuncia?: string;
       fechaDj?: string;
-      numeroRol?: string;
+      montoReclamado?: number;
+      dolo?: Dolo | "";
+      tipoArtefacto?: TipoArtefacto | "";
+      rolMp?: string;
       tribunal?: string;
       region?: string;
-      resultadoJpl?: import("@/lib/api/types").ResultadoJPL | "";
+      resultadoJpl?: ResultadoJPL | "";
       fechaResolucionJpl?: string;
       fechaMedidaPrecautoria?: string;
+      abono?: boolean;
+      montoAbono?: number;
+      rolDemanda?: string;
       fechaDemanda?: string;
+      admisibilidadDemanda?: AdmisibilidadDemanda | "";
+      reposicionInterpuesta?: boolean;
+      resultadoReposicion?: ResultadoReposicion | "";
       fechaNotificacionDemanda?: string;
+      fechaAudiencia?: string;
+      resultadoAudiencia?: ResultadoAudiencia | "";
       fechaSentencia?: string;
-      resultadoSentencia?: import("@/lib/api/types").ResultadoSentencia | "";
+      resultadoSentencia?: ResultadoSentencia | "";
       sentenciaApelada?: boolean;
       sentenciaEjecutoriada?: boolean;
       rolSegundaInstancia?: string;
       corteApelaciones?: string;
       fechaFalloCorte?: string;
-      resultadoSegundaInstancia?: import("@/lib/api/types").ResultadoSentencia | "";
+      resultadoSegundaInstancia?: ResultadoSentencia | "";
       segundaInstanciaEjecutoriada?: boolean;
     }) => {
       const token = await getToken();
