@@ -25,16 +25,20 @@ export function DatePicker({
   className,
   toDate,
 }: DatePickerProps) {
+  const [open, setOpen] = React.useState(false);
   const selected = value ? new Date(value + "T12:00:00") : undefined;
   const showClear = !!selected && !disabled;
 
   function handleSelect(date: Date | undefined) {
-    if (date) onChange(format(date, "yyyy-MM-dd"));
+    if (date) {
+      onChange(format(date, "yyyy-MM-dd"));
+      setOpen(false);
+    }
   }
 
   return (
     <div className={cn("relative rounded-md border border-input", className)}>
-      <Popover>
+      <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger
           disabled={disabled}
           className={cn(
