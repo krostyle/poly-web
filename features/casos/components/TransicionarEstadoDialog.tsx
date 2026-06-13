@@ -39,7 +39,7 @@ const TRANSICIONES: Record<Estado, Estado[]> = {
 const ESTADO_DESC: Partial<Record<Estado, string>> = {
   PREJUDICIAL:       "Medida precautoria presentada ante el JPL — obligatoria al ingresar el caso",
   PAGO_NORMATIVO:    "JPL rechaza la suspensión — banco debe devolver el monto al cliente",
-  JUDICIAL:          "JPL acepta la suspensión, o tribunal exige demanda junto con la medida precautoria",
+  JUDICIAL:          "JPL acepta la suspensión — banco debe demandar formalmente",
   AUDIENCIA:         "Audiencia fijada en tribunal",
   SENTENCIA:         "Tribunal dicta sentencia de primera instancia",
   APELACION:         "Recurso de apelación interpuesto",
@@ -90,15 +90,18 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, resultadoJpl }:
 
   const siguientesBase = TRANSICIONES[estadoActual] ?? [];
 
-  // Build options with optional block reason (shown disabled + explanation)
-  type Opcion = { estado: Estado; bloqueado?: string };
+  // Build options with optional block reason and context-specific description
+  type Opcion = { estado: Estado; bloqueado?: string; desc?: string };
   const opciones: Opcion[] = modoCorreccion
     ? (Object.keys(TRANSICIONES) as Estado[])
         .filter((e) => e !== estadoActual)
         .map((e) => ({ estado: e }))
     : siguientesBase.map((e) => {
-        // Guía informativa basada en resultado JPL (no bloquea — el caso excepcional
-        // de tribunal que exige demanda + medida precautoria simultáneas siempre aplica)
+        // Caso excepcional: el tribunal exige presentar demanda y medida precautoria
+        // en el mismo acto — no implica resolución JPL
+        if (estadoActual === "INGRESO" && e === "JUDICIAL")
+          return { estado: e, desc: "El tribunal exige presentar la demanda y la medida precautoria en el mismo acto" };
+        // Guía informativa basada en resultado JPL (no bloquea)
         if (estadoActual === "PREJUDICIAL" && resultadoJpl && e === "PAGO_NORMATIVO" && resultadoJpl !== "RECHAZA_SUSPENSION")
           return { estado: e, bloqueado: "El JPL aceptó la suspensión — la vía Pago Normativo corresponde cuando la rechaza." };
         if (estadoActual === "PREJUDICIAL" && resultadoJpl && e === "JUDICIAL" && resultadoJpl !== "ACEPTA_SUSPENSION")
@@ -202,12 +205,13 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, resultadoJpl }:
                     No hay transiciones disponibles.
                   </p>
                 ) : (
-                  opciones.map(({ estado: est, bloqueado }) => (
+                  opciones.map(({ estado: est, bloqueado, desc }) => (
                     <EstadoButton
                       key={est}
                       estado={est}
                       selected={selectedEstado === est}
                       bloqueado={bloqueado}
+                      desc={desc}
                       onSelect={() => { if (!bloqueado) { setSelectedEstado(est); setMotivoTermino(""); } }}
                     />
                   ))
@@ -301,14 +305,16 @@ function EstadoButton({
   estado,
   selected,
   bloqueado,
+  desc: descOverride,
   onSelect,
 }: {
   estado: Estado;
   selected: boolean;
   bloqueado?: string;
+  desc?: string;
   onSelect: () => void;
 }) {
-  const desc = ESTADO_DESC[estado];
+  const desc = descOverride ?? ESTADO_DESC[estado];
 
   if (bloqueado) {
     return (
