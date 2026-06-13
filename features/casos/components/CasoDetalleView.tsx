@@ -486,12 +486,15 @@ function CasoEditCard({
             <dt className="text-sm text-(--ink-600) shrink-0">Monto reclamado</dt>
             <dd className="ml-3 min-w-0 flex-1 flex justify-end">
               <input
-                type="number"
-                min={0}
-                value={current.montoReclamado}
-                onChange={(e) => onChange("montoReclamado", e.target.value)}
+                type="text"
+                inputMode="numeric"
+                value={current.montoReclamado ? Number(current.montoReclamado).toLocaleString("es-CL") : ""}
+                onChange={(e) => {
+                  const raw = e.target.value.replace(/\./g, "").replace(/[^\d]/g, "");
+                  onChange("montoReclamado", raw);
+                }}
                 placeholder="—"
-                className={`${editInputClass} max-w-40 placeholder:font-normal placeholder:text-muted-foreground`}
+                className={`${editInputClass} max-w-40 placeholder:font-normal placeholder:text-muted-foreground tabular-nums`}
               />
             </dd>
           </div>
@@ -780,12 +783,15 @@ function DatosMPCard({
                 <dt className="text-sm text-(--ink-600) shrink-0">Monto abono</dt>
                 <dd className="ml-3 min-w-0 flex-1 flex justify-end">
                   <input
-                    type="number"
-                    min={0}
-                    value={current.montoAbono}
-                    onChange={(e) => onChange("montoAbono", e.target.value)}
+                    type="text"
+                    inputMode="numeric"
+                    value={current.montoAbono ? Number(current.montoAbono).toLocaleString("es-CL") : ""}
+                    onChange={(e) => {
+                      const raw = e.target.value.replace(/\./g, "").replace(/[^\d]/g, "");
+                      onChange("montoAbono", raw);
+                    }}
                     placeholder="—"
-                    className={`${editInputClass} max-w-40 placeholder:font-normal placeholder:text-muted-foreground`}
+                    className={`${editInputClass} max-w-40 placeholder:font-normal placeholder:text-muted-foreground tabular-nums`}
                   />
                 </dd>
               </div>
