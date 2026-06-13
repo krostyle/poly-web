@@ -29,7 +29,7 @@ export type MotivoTermino =
 
 export type Semaforo = "VERDE" | "AMARILLO" | "ROJO" | "VENCIDO";
 
-export type EstadoDenuncia = "PENDIENTE" | "ACOGIDA" | "RECHAZADA";
+export type EstadoDenuncia = "SOLICITADA" | "VALIDA" | "INVALIDA" | "SIN_DENUNCIA";
 
 export type TipoPlazo =
   | "ANALISIS_INTERNO"

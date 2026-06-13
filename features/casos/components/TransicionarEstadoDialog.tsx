@@ -17,12 +17,12 @@ import {
 } from "@/components/ui/select";
 import { Button } from "@/components/ui/button";
 import { ESTADO_LABELS } from "./EstadoBadge";
-import type { Estado, EstadoDenuncia, MotivoTermino } from "@/lib/api/types";
+import type { Estado, MotivoTermino, ResultadoJPL } from "@/lib/api/types";
 import { useTransicionarEstado } from "@/features/casos/hooks/useTransicionarEstado";
 
 // ── Transiciones válidas (mirror del backend) ────────────────────────────────
 const TRANSICIONES: Record<Estado, Estado[]> = {
-  INGRESO:          ["PREJUDICIAL", "TERMINADO"],
+  INGRESO:          ["PREJUDICIAL", "JUDICIAL", "TERMINADO"],
   PREJUDICIAL:      ["PAGO_NORMATIVO", "JUDICIAL", "TERMINADO"],
   PAGO_NORMATIVO:   ["JUDICIAL", "TERMINADO"],
   JUDICIAL:         ["AUDIENCIA", "TERMINADO"],
@@ -38,8 +38,8 @@ const TRANSICIONES: Record<Estado, Estado[]> = {
 // ── Descripciones de cada estado (ayuda contextual en el dialog) ─────────────
 const ESTADO_DESC: Partial<Record<Estado, string>> = {
   PREJUDICIAL:       "Medida precautoria presentada ante el JPL — obligatoria al ingresar el caso",
-  PAGO_NORMATIVO:    "Tribunal acoge MP · ordena restituir abono normativo",
-  JUDICIAL:          "Demanda presentada · plazo 10 días hábiles desde notificación",
+  PAGO_NORMATIVO:    "JPL rechaza la suspensión — banco debe devolver el monto al cliente",
+  JUDICIAL:          "JPL acepta la suspensión, o tribunal exige demanda junto con la medida precautoria",
   AUDIENCIA:         "Audiencia fijada en tribunal",
   SENTENCIA:         "Tribunal dicta sentencia de primera instancia",
   APELACION:         "Recurso de apelación interpuesto",
@@ -77,11 +77,11 @@ const MOTIVOS: { value: MotivoTermino; label: string }[] = [
 interface Props {
   casoId: string;
   estadoActual: Estado;
-  estadoDenuncia: EstadoDenuncia;
+  resultadoJpl?: ResultadoJPL;
 }
 
 // ── Componente ───────────────────────────────────────────────────────────────
-export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia }: Props) {
+export function TransicionarEstadoDialog({ casoId, estadoActual, resultadoJpl }: Props) {
   const [open, setOpen] = useState(false);
   const [selectedEstado, setSelectedEstado] = useState<Estado | null>(null);
   const [motivoTermino, setMotivoTermino] = useState<MotivoTermino | "">("");
@@ -97,12 +97,12 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia 
         .filter((e) => e !== estadoActual)
         .map((e) => ({ estado: e }))
     : siguientesBase.map((e) => {
-        // PREJUDICIAL → PAGO_NORMATIVO: only if bank rejected denuncia
-        if (estadoActual === "PREJUDICIAL" && e === "PAGO_NORMATIVO" && estadoDenuncia !== "RECHAZADA")
-          return { estado: e, bloqueado: "El banco debe haber rechazado la denuncia para tomar esta vía." };
-        // PREJUDICIAL → JUDICIAL: only if bank accepted denuncia
-        if (estadoActual === "PREJUDICIAL" && e === "JUDICIAL" && estadoDenuncia !== "ACOGIDA")
-          return { estado: e, bloqueado: "El banco debe haber acogido la denuncia para continuar directamente a Judicial." };
+        // Guía informativa basada en resultado JPL (no bloquea — el caso excepcional
+        // de tribunal que exige demanda + medida precautoria simultáneas siempre aplica)
+        if (estadoActual === "PREJUDICIAL" && resultadoJpl && e === "PAGO_NORMATIVO" && resultadoJpl !== "RECHAZA_SUSPENSION")
+          return { estado: e, bloqueado: "El JPL aceptó la suspensión — la vía Pago Normativo corresponde cuando la rechaza." };
+        if (estadoActual === "PREJUDICIAL" && resultadoJpl && e === "JUDICIAL" && resultadoJpl !== "ACEPTA_SUSPENSION")
+          return { estado: e, bloqueado: "El JPL rechazó la suspensión — la vía Judicial corresponde cuando la acepta." };
         return { estado: e };
       });
 

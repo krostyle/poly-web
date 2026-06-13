@@ -167,7 +167,7 @@ function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
         fecha_resolucion_jpl: "Fecha resolución JPL",
       };
       const DENUNCIA_LABELS: Record<string, string> = {
-        PENDIENTE: "Pendiente", ACOGIDA: "Acogida", RECHAZADA: "Rechazada",
+        SOLICITADA: "Solicitada", VALIDA: "Válida", INVALIDA: "Inválida", SIN_DENUNCIA: "Sin denuncia",
       };
       const items = cambios
         ? Object.entries(cambios).map(([k, v]) => {
@@ -243,9 +243,10 @@ function UnsavedChangesBar({
 // ── Shared editable field types ───────────────────────────────────────────────
 
 const ESTADO_DENUNCIA_LABELS: Record<EstadoDenuncia, string> = {
-  PENDIENTE: "Pendiente",
-  ACOGIDA:   "Acogida",
-  RECHAZADA: "Rechazada",
+  SOLICITADA:   "Solicitada",
+  VALIDA:       "Válida",
+  INVALIDA:     "Inválida",
+  SIN_DENUNCIA: "Sin denuncia",
 };
 
 interface CasoEditState {
@@ -380,7 +381,7 @@ function CasoEditCard({
               <dd className="ml-3 min-w-0 flex-1 flex justify-end">
                 <Select
                   value={current.estadoDenuncia}
-                  onValueChange={(v) => onChange("estadoDenuncia", (v ?? "PENDIENTE") as EstadoDenuncia)}
+                  onValueChange={(v) => onChange("estadoDenuncia", (v ?? "SOLICITADA") as EstadoDenuncia)}
                 >
                   <SelectTrigger className="h-8 w-full max-w-36 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
                     <span className="flex-1 text-left text-sm truncate">
@@ -388,7 +389,7 @@ function CasoEditCard({
                     </span>
                   </SelectTrigger>
                   <SelectContent>
-                    {(["PENDIENTE", "ACOGIDA", "RECHAZADA"] as EstadoDenuncia[]).map((v) => (
+                    {(["SOLICITADA", "VALIDA", "INVALIDA", "SIN_DENUNCIA"] as EstadoDenuncia[]).map((v) => (
                       <SelectItem key={v} value={v} className="text-sm">
                         {ESTADO_DENUNCIA_LABELS[v]}
                       </SelectItem>
@@ -424,8 +425,8 @@ function CasoEditCard({
               <DatePicker
                 value={current.fechaDenuncia || undefined}
                 onChange={(v) => onChange("fechaDenuncia", v)}
-                placeholder={current.estadoDenuncia === "PENDIENTE" ? "" : "Sin fecha"}
-                disabled={current.estadoDenuncia === "PENDIENTE"}
+                placeholder={current.estadoDenuncia === "SIN_DENUNCIA" ? "Sin denuncia" : ""}
+                disabled={current.estadoDenuncia === "SIN_DENUNCIA"}
                 className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
               />
             </dd>
@@ -672,7 +673,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
     () => ({
       abogadoId: data?.caso.abogadoId ?? "",
       numeroOt: data?.caso.numeroOt ?? "",
-      estadoDenuncia: data?.caso.estadoDenuncia ?? "PENDIENTE",
+      estadoDenuncia: data?.caso.estadoDenuncia ?? "SOLICITADA",
       fechaDenuncia: data?.caso.fechaDenuncia ?? "",
       fechaDj: data?.caso.fechaDj ?? "",
       numeroRol: data?.caso.numeroRol ?? "",
@@ -856,7 +857,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
             <TransicionarEstadoDialog
               casoId={caso.id}
               estadoActual={caso.estado}
-              estadoDenuncia={caso.estadoDenuncia}
+              resultadoJpl={caso.resultadoJpl}
             />
           )}
           {canDelete && (
