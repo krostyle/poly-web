@@ -107,6 +107,10 @@ function DetailSkeleton() {
   );
 }
 
+function parseDate(s: string | undefined): Date | undefined {
+  return s ? new Date(s + "T12:00:00") : undefined;
+}
+
 function formatDateTime(iso: string): string {
   return new Date(iso).toLocaleString("es-CL", {
     day: "2-digit",
@@ -225,23 +229,20 @@ function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
 
 // ── Unsaved changes bar ────────────────────────────────────────────────────────
 
-function UnsavedChangesBar({ onSave, onDiscard, isSaving, hasError }: {
+function UnsavedChangesBar({ onSave, onDiscard, isSaving }: {
   onSave: () => void;
   onDiscard: () => void;
   isSaving: boolean;
-  hasError?: boolean;
 }) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between gap-4 border-t border-border bg-(--paper)/95 px-6 py-3 shadow-xl backdrop-blur-sm animate-in slide-in-from-bottom-2 duration-200">
       <div className="flex items-center gap-2">
-        <span className={`size-2 rounded-full shrink-0 ${hasError ? "bg-destructive" : "bg-amber-400"}`} />
-        <span className="text-sm text-(--ink-600)">
-          {hasError ? "Corrige los errores antes de guardar" : "Tienes cambios sin guardar"}
-        </span>
+        <span className="size-2 rounded-full bg-amber-400 shrink-0" />
+        <span className="text-sm text-(--ink-600)">Tienes cambios sin guardar</span>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={onDiscard} disabled={isSaving}>Descartar</Button>
-        <Button size="sm" onClick={onSave} disabled={isSaving || hasError}>
+        <Button size="sm" onClick={onSave} disabled={isSaving}>
           {isSaving && <Loader2 className="size-3.5 animate-spin" />}
           {isSaving ? "Guardando…" : "Guardar cambios"}
         </Button>
@@ -620,12 +621,12 @@ function DatosMPCard({
   current,
   onChange,
   canEdit,
-  fechaDj,
+  minFechaMP,
 }: {
   current: Pick<CasoEditState, "rolMp" | "region" | "tribunal" | "fechaMedidaPrecautoria" | "fechaResolucionJpl" | "resultadoJpl" | "abono" | "montoAbono">;
   onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
   canEdit: boolean;
-  fechaDj: string;
+  minFechaMP?: Date;
 }) {
   return (
     <Card className="rounded-xl border-border shadow-none">
@@ -700,28 +701,21 @@ function DatosMPCard({
           )}
 
           {/* Fecha MP */}
-          {canEdit ? (() => {
-            const err = current.fechaMedidaPrecautoria && fechaDj && current.fechaMedidaPrecautoria < fechaDj;
-            return (
-              <div className={`border-b border-border ${err ? "pt-2.5 pb-1" : "py-2.5"}`}>
-                <div className="flex items-center justify-between">
-                  <dt className="text-sm text-(--ink-600) shrink-0">Fecha presentación MP</dt>
-                  <dd className="ml-3 min-w-0 flex-1 flex justify-end">
-                    <DatePicker
-                      value={current.fechaMedidaPrecautoria || undefined}
-                      onChange={(v) => onChange("fechaMedidaPrecautoria", v)}
-                      placeholder="Sin fecha"
-                      toDate={new Date()}
-                      className={`h-8 w-full max-w-44 text-sm hover:border-input hover:bg-(--slate-100) ${err ? "border-destructive bg-destructive/5" : "border-border/60 bg-(--slate-100)/60"}`}
-                    />
-                  </dd>
-                </div>
-                {err && (
-                  <p className="mt-1 text-xs text-destructive text-right">No puede ser anterior a la fecha de DJ</p>
-                )}
-              </div>
-            );
-          })() : current.fechaMedidaPrecautoria ? (
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha presentación MP</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <DatePicker
+                  value={current.fechaMedidaPrecautoria || undefined}
+                  onChange={(v) => onChange("fechaMedidaPrecautoria", v)}
+                  placeholder="Sin fecha"
+                  fromDate={minFechaMP}
+                  toDate={new Date()}
+                  className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+          ) : current.fechaMedidaPrecautoria ? (
             <Field label="Fecha presentación MP" value={<span className="tabular-nums">{formatDate(current.fechaMedidaPrecautoria)}</span>} />
           ) : null}
 
@@ -734,6 +728,7 @@ function DatosMPCard({
                   value={current.fechaResolucionJpl || undefined}
                   onChange={(v) => onChange("fechaResolucionJpl", v)}
                   placeholder="Sin fecha"
+                  fromDate={parseDate(current.fechaMedidaPrecautoria) ?? minFechaMP}
                   toDate={new Date()}
                   className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
                 />
@@ -824,12 +819,12 @@ function DatosJudicialCard({
   current,
   onChange,
   canEdit,
-  fechaDj,
+  minFechaDemanda,
 }: {
   current: Pick<CasoEditState, "rolDemanda" | "fechaDemanda" | "admisibilidadDemanda" | "reposicionInterpuesta" | "resultadoReposicion" | "fechaNotificacionDemanda">;
   onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
   canEdit: boolean;
-  fechaDj: string;
+  minFechaDemanda?: Date;
 }) {
   return (
     <Card className="rounded-xl border-border shadow-none">
@@ -859,28 +854,21 @@ function DatosJudicialCard({
           )}
 
           {/* Fecha demanda */}
-          {canEdit ? (() => {
-            const err = current.fechaDemanda && fechaDj && current.fechaDemanda < fechaDj;
-            return (
-              <div className={`border-b border-border ${err ? "pt-2.5 pb-1" : "py-2.5"}`}>
-                <div className="flex items-center justify-between">
-                  <dt className="text-sm text-(--ink-600) shrink-0">Fecha demanda</dt>
-                  <dd className="ml-3 min-w-0 flex-1 flex justify-end">
-                    <DatePicker
-                      value={current.fechaDemanda || undefined}
-                      onChange={(v) => onChange("fechaDemanda", v)}
-                      placeholder="Sin fecha"
-                      toDate={new Date()}
-                      className={`h-8 w-full max-w-44 text-sm hover:border-input hover:bg-(--slate-100) ${err ? "border-destructive bg-destructive/5" : "border-border/60 bg-(--slate-100)/60"}`}
-                    />
-                  </dd>
-                </div>
-                {err && (
-                  <p className="mt-1 text-xs text-destructive text-right">No puede ser anterior a la fecha de DJ</p>
-                )}
-              </div>
-            );
-          })() : current.fechaDemanda ? (
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha demanda</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <DatePicker
+                  value={current.fechaDemanda || undefined}
+                  onChange={(v) => onChange("fechaDemanda", v)}
+                  placeholder="Sin fecha"
+                  fromDate={minFechaDemanda}
+                  toDate={new Date()}
+                  className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+          ) : current.fechaDemanda ? (
             <Field label="Fecha demanda" value={<span className="tabular-nums">{formatDate(current.fechaDemanda)}</span>} />
           ) : null}
 
@@ -977,6 +965,7 @@ function DatosJudicialCard({
                   value={current.fechaNotificacionDemanda || undefined}
                   onChange={(v) => onChange("fechaNotificacionDemanda", v)}
                   placeholder="Sin fecha"
+                  fromDate={parseDate(current.fechaDemanda)}
                   toDate={new Date()}
                   className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
                 />
@@ -997,10 +986,12 @@ function AudienciaCard({
   current,
   onChange,
   canEdit,
+  minFechaAudiencia,
 }: {
   current: Pick<CasoEditState, "fechaAudiencia" | "resultadoAudiencia">;
   onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
   canEdit: boolean;
+  minFechaAudiencia?: Date;
 }) {
   return (
     <Card className="rounded-xl border-border shadow-none">
@@ -1018,6 +1009,7 @@ function AudienciaCard({
                   value={current.fechaAudiencia || undefined}
                   onChange={(v) => onChange("fechaAudiencia", v)}
                   placeholder="Sin fecha"
+                  fromDate={minFechaAudiencia}
                   toDate={new Date()}
                   className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
                 />
@@ -1079,10 +1071,12 @@ function SentenciaCard({
   current,
   onChange,
   canEdit,
+  minFechaSentencia,
 }: {
   current: Pick<CasoEditState, "fechaSentencia" | "resultadoSentencia" | "sentenciaApelada" | "sentenciaEjecutoriada">;
   onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
   canEdit: boolean;
+  minFechaSentencia?: Date;
 }) {
   return (
     <Card className="rounded-xl border-border shadow-none">
@@ -1099,6 +1093,7 @@ function SentenciaCard({
                   value={current.fechaSentencia || undefined}
                   onChange={(v) => onChange("fechaSentencia", v)}
                   placeholder="Sin fecha"
+                  fromDate={minFechaSentencia}
                   toDate={new Date()}
                   className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
                 />
@@ -1173,10 +1168,12 @@ function ApelacionCard({
   current,
   onChange,
   canEdit,
+  minFechaFalloCorte,
 }: {
   current: Pick<CasoEditState, "rolSegundaInstancia" | "corteApelaciones" | "fechaFalloCorte" | "resultadoSegundaInstancia" | "segundaInstanciaEjecutoriada">;
   onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
   canEdit: boolean;
+  minFechaFalloCorte?: Date;
 }) {
   return (
     <Card className="rounded-xl border-border shadow-none">
@@ -1227,6 +1224,7 @@ function ApelacionCard({
                   value={current.fechaFalloCorte || undefined}
                   onChange={(v) => onChange("fechaFalloCorte", v)}
                   placeholder="Sin fecha"
+                  fromDate={minFechaFalloCorte}
                   toDate={new Date()}
                   className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
                 />
@@ -1368,10 +1366,13 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
     clienteEdit.contacto !== clienteOriginal.contacto;
   const isDirty = casoIsDirty || clienteIsDirty;
   const isSaving = casoMutation.isPending || clienteMutation.isPending;
-  const hasDateError = !!(
-    (casoEdit.fechaMedidaPrecautoria && casoEdit.fechaDj && casoEdit.fechaMedidaPrecautoria < casoEdit.fechaDj) ||
-    (casoEdit.fechaDemanda && casoEdit.fechaDj && casoEdit.fechaDemanda < casoEdit.fechaDj)
-  );
+
+  // Progressive date constraints for calendar blocking
+  const minFechaMP        = parseDate(casoEdit.fechaDj);
+  const minFechaDemanda   = parseDate(casoEdit.fechaResolucionJpl) ?? parseDate(casoEdit.fechaMedidaPrecautoria) ?? parseDate(casoEdit.fechaDj);
+  const minFechaAudiencia = parseDate(casoEdit.fechaNotificacionDemanda) ?? parseDate(casoEdit.fechaDemanda);
+  const minFechaSentencia = parseDate(casoEdit.fechaAudiencia);
+  const minFechaFalloCorte = parseDate(casoEdit.fechaSentencia);
 
   function handleSaveAll() {
     if (casoIsDirty) {
@@ -1555,19 +1556,19 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
       {/* Estado-scoped judicial cards */}
       {showMPCard && (
-        <DatosMPCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} fechaDj={casoEdit.fechaDj} />
+        <DatosMPCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} minFechaMP={minFechaMP} />
       )}
       {showDemandaCard && (
-        <DatosJudicialCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} fechaDj={casoEdit.fechaDj} />
+        <DatosJudicialCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} minFechaDemanda={minFechaDemanda} />
       )}
       {showAudienciaCard && (
-        <AudienciaCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} />
+        <AudienciaCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} minFechaAudiencia={minFechaAudiencia} />
       )}
       {showSentenciaCard && (
-        <SentenciaCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} />
+        <SentenciaCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} minFechaSentencia={minFechaSentencia} />
       )}
       {casoEdit.sentenciaApelada && (
-        <ApelacionCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} />
+        <ApelacionCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} minFechaFalloCorte={minFechaFalloCorte} />
       )}
 
       {/* Flujo */}
@@ -1650,7 +1651,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
       {/* Save bar */}
       {isDirty && (
-        <UnsavedChangesBar onSave={handleSaveAll} onDiscard={handleDiscardAll} isSaving={isSaving} hasError={hasDateError} />
+        <UnsavedChangesBar onSave={handleSaveAll} onDiscard={handleDiscardAll} isSaving={isSaving} />
       )}
     </div>
   );

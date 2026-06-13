@@ -14,6 +14,7 @@ interface DatePickerProps {
   placeholder?: string;
   disabled?: boolean;
   className?: string;
+  fromDate?: Date;
   toDate?: Date;
 }
 
@@ -23,6 +24,7 @@ export function DatePicker({
   placeholder = "Seleccionar fecha",
   disabled,
   className,
+  fromDate,
   toDate,
 }: DatePickerProps) {
   const [open, setOpen] = React.useState(false);
@@ -64,8 +66,11 @@ export function DatePicker({
             mode="single"
             selected={selected}
             onSelect={handleSelect}
-            disabled={toDate ? { after: toDate } : undefined}
-            defaultMonth={selected ?? new Date()}
+            disabled={[
+              ...(fromDate ? [{ before: fromDate }] : []),
+              ...(toDate ? [{ after: toDate }] : []),
+            ]}
+            defaultMonth={selected ?? fromDate ?? new Date()}
             locale={es}
           />
         </PopoverContent>
