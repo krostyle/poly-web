@@ -75,28 +75,31 @@ export function TribunalCombobox({ value, regionFilter, onSelect, onClear, class
         if (!o) setSearch("");
       }}
     >
-      <PopoverTrigger
-        className={cn(
-          "flex min-h-8 w-full items-center justify-between gap-1 rounded border border-border/60 bg-(--slate-100)/60 px-2 py-1 text-left text-sm font-medium text-(--navy-900) hover:border-input hover:bg-(--slate-100) focus:outline-none focus:border-input",
-          className
-        )}
-      >
-        <span className="flex-1 leading-snug truncate">
-          {value || <span className="font-normal text-muted-foreground">—</span>}
-        </span>
-        {value && onClear ? (
+      <div className={cn("relative flex min-h-8 w-full items-center", className)}>
+        <PopoverTrigger
+          className={cn(
+            "flex min-h-8 w-full items-center gap-1 rounded border border-border/60 bg-(--slate-100)/60 px-2 py-1 text-left text-sm font-medium text-(--navy-900) hover:border-input hover:bg-(--slate-100) focus:outline-none focus:border-input",
+            value && onClear ? "pr-7" : "pr-2 justify-between"
+          )}
+        >
+          <span className="flex-1 leading-snug truncate">
+            {value || <span className="font-normal text-muted-foreground">—</span>}
+          </span>
+          {(!value || !onClear) && (
+            <ChevronsUpDown className="size-3.5 shrink-0 text-muted-foreground" />
+          )}
+        </PopoverTrigger>
+        {value && onClear && (
           <button
             type="button"
-            onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClear(); }}
-            className="shrink-0 self-center rounded p-0.5 text-muted-foreground hover:text-(--navy-900) hover:bg-(--slate-100) transition-colors"
+            onClick={() => onClear()}
+            className="absolute right-1.5 shrink-0 rounded p-0.5 text-muted-foreground hover:text-(--navy-900) hover:bg-(--slate-100) transition-colors"
             aria-label="Quitar tribunal"
           >
             <X className="size-3.5" />
           </button>
-        ) : (
-          <ChevronsUpDown className="size-3.5 shrink-0 self-center text-muted-foreground" />
         )}
-      </PopoverTrigger>
+      </div>
 
       <PopoverContent
         className="w-80 p-0"
