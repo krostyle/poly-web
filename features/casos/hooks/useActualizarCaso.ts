@@ -16,8 +16,10 @@ export function useActualizarCaso(casoId: string) {
       numeroRol?: string;
       tribunal?: string;
       region?: string;
-      resultadoJpl?: import("@/lib/api/types").ResultadoJPL;
+      resultadoJpl?: import("@/lib/api/types").ResultadoJPL | "";
       fechaResolucionJpl?: string;
+      fechaMedidaPrecautoria?: string;
+      fechaDemanda?: string;
     }) => {
       const token = await getToken();
       return actualizarCaso(casoId, patch, token ?? "");

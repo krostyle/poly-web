@@ -46,6 +46,8 @@ interface RawCaso {
   region: string | null;
   resultado_jpl: ResultadoJPL | null;
   fecha_resolucion_jpl: string | null;
+  fecha_medida_precautoria: string | null;
+  fecha_demanda: string | null;
   created_at: string;
   updated_at: string;
 }
@@ -117,6 +119,8 @@ function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
       region: raw.caso.region ?? undefined,
       resultadoJpl: raw.caso.resultado_jpl ?? undefined,
       fechaResolucionJpl: raw.caso.fecha_resolucion_jpl ?? undefined,
+      fechaMedidaPrecautoria: raw.caso.fecha_medida_precautoria ?? undefined,
+      fechaDemanda: raw.caso.fecha_demanda ?? undefined,
       createdAt: raw.caso.created_at,
       updatedAt: raw.caso.updated_at,
     },
@@ -198,10 +202,12 @@ export async function actualizarCaso(
     fechaDenuncia?: string;
     fechaDj?: string;
     numeroRol?: string;
-    tribunal?: string;
-    region?: string;
-    resultadoJpl?: ResultadoJPL;
+    tribunal?: string;       // "" = limpiar
+    region?: string;         // "" = limpiar
+    resultadoJpl?: ResultadoJPL | "";
     fechaResolucionJpl?: string;
+    fechaMedidaPrecautoria?: string; // "" = limpiar
+    fechaDemanda?: string;           // "" = limpiar
   },
   token: string
 ): Promise<CasoDetalle> {
@@ -216,6 +222,8 @@ export async function actualizarCaso(
   if (patch.region !== undefined) body.region = patch.region;
   if (patch.resultadoJpl !== undefined) body.resultado_jpl = patch.resultadoJpl;
   if (patch.fechaResolucionJpl !== undefined) body.fecha_resolucion_jpl = patch.fechaResolucionJpl;
+  if (patch.fechaMedidaPrecautoria !== undefined) body.fecha_medida_precautoria = patch.fechaMedidaPrecautoria;
+  if (patch.fechaDemanda !== undefined) body.fecha_demanda = patch.fechaDemanda;
   const raw = await apiClient.request<RawCasoDetalle>(`/v1/casos/${id}`, {
     method: "PATCH",
     body: JSON.stringify(body),

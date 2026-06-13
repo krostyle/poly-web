@@ -163,8 +163,10 @@ function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
         numero_rol:           "N° Rol",
         tribunal:             "Tribunal",
         region:               "Región",
-        resultado_jpl:        "Resultado JPL",
-        fecha_resolucion_jpl: "Fecha resolución JPL",
+        resultado_jpl:            "Resultado JPL",
+        fecha_resolucion_jpl:     "Fecha resolución JPL",
+        fecha_medida_precautoria: "Fecha medida precautoria",
+        fecha_demanda:            "Fecha demanda",
       };
       const DENUNCIA_LABELS: Record<string, string> = {
         SOLICITADA: "Solicitada", VALIDA: "Válida", INVALIDA: "Inválida", SIN_DENUNCIA: "Sin denuncia",
@@ -260,6 +262,8 @@ interface CasoEditState {
   region: string;
   resultadoJpl: ResultadoJPL | "";
   fechaResolucionJpl: string;
+  fechaMedidaPrecautoria: string;
+  fechaDemanda: string;
 }
 
 const REGIONES_CHILE = [
@@ -517,7 +521,7 @@ function DatosJudicialesCard({
   onChange,
   canEdit,
 }: {
-  current: Pick<CasoEditState, "numeroRol" | "tribunal" | "region" | "resultadoJpl" | "fechaResolucionJpl">;
+  current: Pick<CasoEditState, "numeroRol" | "tribunal" | "region" | "resultadoJpl" | "fechaResolucionJpl" | "fechaMedidaPrecautoria" | "fechaDemanda">;
   onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
   canEdit: boolean;
 }) {
@@ -603,6 +607,24 @@ function DatosJudicialesCard({
             <Field label="Tribunal" value={current.tribunal || "—"} />
           )}
 
+          {/* Fecha medida precautoria */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha medida precautoria</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <DatePicker
+                  value={current.fechaMedidaPrecautoria || undefined}
+                  onChange={(v) => onChange("fechaMedidaPrecautoria", v)}
+                  placeholder="Sin fecha"
+                  toDate={new Date()}
+                  className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+          ) : current.fechaMedidaPrecautoria ? (
+            <Field label="Fecha medida precautoria" value={<span className="tabular-nums">{formatDate(current.fechaMedidaPrecautoria)}</span>} />
+          ) : null}
+
           {/* Resultado JPL */}
           {canEdit ? (
             <div className="py-2.5 border-b border-border space-y-1.5">
@@ -638,7 +660,7 @@ function DatosJudicialesCard({
 
           {/* Fecha resolución JPL */}
           {canEdit ? (
-            <div className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
               <dt className="text-sm text-(--ink-600) shrink-0">Fecha resolución JPL</dt>
               <dd className="ml-3 min-w-0 flex-1 flex justify-end">
                 <DatePicker
@@ -652,6 +674,24 @@ function DatosJudicialesCard({
             </div>
           ) : current.fechaResolucionJpl ? (
             <Field label="Fecha resolución JPL" value={<span className="tabular-nums">{formatDate(current.fechaResolucionJpl)}</span>} />
+          ) : null}
+
+          {/* Fecha demanda */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha demanda</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <DatePicker
+                  value={current.fechaDemanda || undefined}
+                  onChange={(v) => onChange("fechaDemanda", v)}
+                  placeholder="Sin fecha"
+                  toDate={new Date()}
+                  className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+          ) : current.fechaDemanda ? (
+            <Field label="Fecha demanda" value={<span className="tabular-nums">{formatDate(current.fechaDemanda)}</span>} />
           ) : null}
         </dl>
       </CardContent>
@@ -685,9 +725,11 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
       region: data?.caso.region ?? "",
       resultadoJpl: data?.caso.resultadoJpl ?? "",
       fechaResolucionJpl: data?.caso.fechaResolucionJpl ?? "",
+      fechaMedidaPrecautoria: data?.caso.fechaMedidaPrecautoria ?? "",
+      fechaDemanda: data?.caso.fechaDemanda ?? "",
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data?.caso.abogadoId, data?.caso.numeroOt, data?.caso.estadoDenuncia, data?.caso.fechaDenuncia, data?.caso.fechaDj, data?.caso.numeroRol, data?.caso.tribunal, data?.caso.region, data?.caso.resultadoJpl, data?.caso.fechaResolucionJpl]
+    [data?.caso.abogadoId, data?.caso.numeroOt, data?.caso.estadoDenuncia, data?.caso.fechaDenuncia, data?.caso.fechaDj, data?.caso.numeroRol, data?.caso.tribunal, data?.caso.region, data?.caso.resultadoJpl, data?.caso.fechaResolucionJpl, data?.caso.fechaMedidaPrecautoria, data?.caso.fechaDemanda]
   );
 
   const clienteOriginal = useMemo<ClienteEditState>(
@@ -723,7 +765,9 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
     casoEdit.tribunal !== casoOriginal.tribunal ||
     casoEdit.region !== casoOriginal.region ||
     casoEdit.resultadoJpl !== casoOriginal.resultadoJpl ||
-    casoEdit.fechaResolucionJpl !== casoOriginal.fechaResolucionJpl;
+    casoEdit.fechaResolucionJpl !== casoOriginal.fechaResolucionJpl ||
+    casoEdit.fechaMedidaPrecautoria !== casoOriginal.fechaMedidaPrecautoria ||
+    casoEdit.fechaDemanda !== casoOriginal.fechaDemanda;
 
   const clienteIsDirty =
     clienteEdit.nombre !== clienteOriginal.nombre ||
@@ -748,13 +792,17 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
       if (casoEdit.numeroRol !== casoOriginal.numeroRol)
         patch.numeroRol = casoEdit.numeroRol.trim() || undefined;
       if (casoEdit.tribunal !== casoOriginal.tribunal)
-        patch.tribunal = casoEdit.tribunal.trim() || undefined;
+        patch.tribunal = casoEdit.tribunal.trim(); // "" signals clear to backend
       if (casoEdit.region !== casoOriginal.region)
-        patch.region = casoEdit.region || undefined;
+        patch.region = casoEdit.region; // "" signals clear to backend
       if (casoEdit.resultadoJpl !== casoOriginal.resultadoJpl)
-        patch.resultadoJpl = casoEdit.resultadoJpl || undefined;
+        patch.resultadoJpl = casoEdit.resultadoJpl; // "" signals clear to backend
       if (casoEdit.fechaResolucionJpl !== casoOriginal.fechaResolucionJpl)
         patch.fechaResolucionJpl = casoEdit.fechaResolucionJpl || undefined;
+      if (casoEdit.fechaMedidaPrecautoria !== casoOriginal.fechaMedidaPrecautoria)
+        patch.fechaMedidaPrecautoria = casoEdit.fechaMedidaPrecautoria; // "" signals clear
+      if (casoEdit.fechaDemanda !== casoOriginal.fechaDemanda)
+        patch.fechaDemanda = casoEdit.fechaDemanda; // "" signals clear
       casoMutation.mutate(patch);
     }
     if (clienteIsDirty) {

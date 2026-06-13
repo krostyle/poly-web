@@ -64,6 +64,8 @@ export interface Caso {
   region?: string;
   resultadoJpl?: ResultadoJPL;
   fechaResolucionJpl?: string;
+  fechaMedidaPrecautoria?: string;
+  fechaDemanda?: string;
   createdAt: string;
   updatedAt: string;
 }
