@@ -1,5 +1,5 @@
 import { apiClient } from "./client";
-import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry, Estado, EstadoDenuncia, ResultadoJPL } from "./types";
+import type { CasoListItem, CasoDetalle, CrearCasoPayload, Operacion, HistorialEntry, Estado, EstadoDenuncia, ResultadoJPL, ResultadoSentencia } from "./types";
 
 // Raw snake_case shapes returned by poly-api
 
@@ -48,6 +48,16 @@ interface RawCaso {
   fecha_resolucion_jpl: string | null;
   fecha_medida_precautoria: string | null;
   fecha_demanda: string | null;
+  fecha_notificacion_demanda: string | null;
+  fecha_sentencia: string | null;
+  resultado_sentencia: ResultadoSentencia | null;
+  sentencia_apelada: boolean;
+  sentencia_ejecutoriada: boolean;
+  rol_segunda_instancia: string | null;
+  corte_apelaciones: string | null;
+  fecha_fallo_corte: string | null;
+  resultado_segunda_instancia: ResultadoSentencia | null;
+  segunda_instancia_ejecutoriada: boolean;
   created_at: string;
   updated_at: string;
 }
@@ -121,6 +131,16 @@ function mapCasoDetalle(raw: RawCasoDetalle): CasoDetalle {
       fechaResolucionJpl: raw.caso.fecha_resolucion_jpl ?? undefined,
       fechaMedidaPrecautoria: raw.caso.fecha_medida_precautoria ?? undefined,
       fechaDemanda: raw.caso.fecha_demanda ?? undefined,
+      fechaNotificacionDemanda: raw.caso.fecha_notificacion_demanda ?? undefined,
+      fechaSentencia: raw.caso.fecha_sentencia ?? undefined,
+      resultadoSentencia: raw.caso.resultado_sentencia ?? undefined,
+      sentenciaApelada: raw.caso.sentencia_apelada,
+      sentenciaEjecutoriada: raw.caso.sentencia_ejecutoriada,
+      rolSegundaInstancia: raw.caso.rol_segunda_instancia ?? undefined,
+      corteApelaciones: raw.caso.corte_apelaciones ?? undefined,
+      fechaFalloCorte: raw.caso.fecha_fallo_corte ?? undefined,
+      resultadoSegundaInstancia: raw.caso.resultado_segunda_instancia ?? undefined,
+      segundaInstanciaEjecutoriada: raw.caso.segunda_instancia_ejecutoriada,
       createdAt: raw.caso.created_at,
       updatedAt: raw.caso.updated_at,
     },
@@ -206,8 +226,18 @@ export async function actualizarCaso(
     region?: string;         // "" = limpiar
     resultadoJpl?: ResultadoJPL | "";
     fechaResolucionJpl?: string;
-    fechaMedidaPrecautoria?: string; // "" = limpiar
-    fechaDemanda?: string;           // "" = limpiar
+    fechaMedidaPrecautoria?: string;
+    fechaDemanda?: string;
+    fechaNotificacionDemanda?: string;
+    fechaSentencia?: string;
+    resultadoSentencia?: ResultadoSentencia | "";
+    sentenciaApelada?: boolean;
+    sentenciaEjecutoriada?: boolean;
+    rolSegundaInstancia?: string;
+    corteApelaciones?: string;
+    fechaFalloCorte?: string;
+    resultadoSegundaInstancia?: ResultadoSentencia | "";
+    segundaInstanciaEjecutoriada?: boolean;
   },
   token: string
 ): Promise<CasoDetalle> {
@@ -224,6 +254,16 @@ export async function actualizarCaso(
   if (patch.fechaResolucionJpl !== undefined) body.fecha_resolucion_jpl = patch.fechaResolucionJpl;
   if (patch.fechaMedidaPrecautoria !== undefined) body.fecha_medida_precautoria = patch.fechaMedidaPrecautoria;
   if (patch.fechaDemanda !== undefined) body.fecha_demanda = patch.fechaDemanda;
+  if (patch.fechaNotificacionDemanda !== undefined) body.fecha_notificacion_demanda = patch.fechaNotificacionDemanda;
+  if (patch.fechaSentencia !== undefined) body.fecha_sentencia = patch.fechaSentencia;
+  if (patch.resultadoSentencia !== undefined) body.resultado_sentencia = patch.resultadoSentencia;
+  if (patch.sentenciaApelada !== undefined) body.sentencia_apelada = patch.sentenciaApelada;
+  if (patch.sentenciaEjecutoriada !== undefined) body.sentencia_ejecutoriada = patch.sentenciaEjecutoriada;
+  if (patch.rolSegundaInstancia !== undefined) body.rol_segunda_instancia = patch.rolSegundaInstancia;
+  if (patch.corteApelaciones !== undefined) body.corte_apelaciones = patch.corteApelaciones;
+  if (patch.fechaFalloCorte !== undefined) body.fecha_fallo_corte = patch.fechaFalloCorte;
+  if (patch.resultadoSegundaInstancia !== undefined) body.resultado_segunda_instancia = patch.resultadoSegundaInstancia;
+  if (patch.segundaInstanciaEjecutoriada !== undefined) body.segunda_instancia_ejecutoriada = patch.segundaInstanciaEjecutoriada;
   const raw = await apiClient.request<RawCasoDetalle>(`/v1/casos/${id}`, {
     method: "PATCH",
     body: JSON.stringify(body),

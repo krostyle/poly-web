@@ -42,7 +42,7 @@ import { useUsuariosBanco } from "@/features/bancos/hooks/useUsuariosBanco";
 import { useMe } from "@/features/auth/hooks/useMe";
 import { TribunalCombobox } from "@/features/tribunales/components/TribunalCombobox";
 import { CasoFlowView } from "./CasoFlowView";
-import type { HistorialEntry, Estado, EstadoDenuncia, Caso, Cliente, ResultadoJPL } from "@/lib/api/types";
+import type { HistorialEntry, Estado, EstadoDenuncia, Caso, Cliente, ResultadoJPL, ResultadoSentencia } from "@/lib/api/types";
 
 interface CasoDetalleViewProps {
   id: string;
@@ -155,18 +155,28 @@ function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
     case "CASO_ACTUALIZADO": {
       const cambios = d.cambios as Record<string, string | null> | undefined;
       const CAMPO_LABELS: Record<string, string> = {
-        abogado:              "Abogado",
-        numero_ot:            "N° OT",
-        estado_denuncia:      "Denuncia banco",
-        fecha_denuncia:       "Fecha denuncia",
-        fecha_dj:             "Fecha DJ",
-        numero_rol:           "N° Rol",
-        tribunal:             "Tribunal",
-        region:               "Región",
-        resultado_jpl:            "Resultado JPL",
-        fecha_resolucion_jpl:     "Fecha resolución JPL",
-        fecha_medida_precautoria: "Fecha medida precautoria",
-        fecha_demanda:            "Fecha demanda",
+        abogado:                     "Abogado",
+        numero_ot:                   "N° OT",
+        estado_denuncia:             "Denuncia banco",
+        fecha_denuncia:              "Fecha denuncia",
+        fecha_dj:                    "Fecha DJ",
+        numero_rol:                  "N° Rol",
+        tribunal:                    "Tribunal",
+        region:                      "Región",
+        resultado_jpl:               "Resultado JPL",
+        fecha_resolucion_jpl:        "Fecha resolución JPL",
+        fecha_medida_precautoria:    "Fecha medida precautoria",
+        fecha_demanda:               "Fecha demanda",
+        fecha_notificacion_demanda:  "Fecha notificación demanda",
+        fecha_sentencia:             "Fecha sentencia",
+        resultado_sentencia:         "Resultado sentencia",
+        sentencia_apelada:           "Apelada",
+        sentencia_ejecutoriada:      "Ejecutoriada",
+        rol_segunda_instancia:       "Rol segunda instancia",
+        corte_apelaciones:           "Corte de apelaciones",
+        fecha_fallo_corte:           "Fecha fallo corte",
+        resultado_segunda_instancia: "Resultado segunda instancia",
+        segunda_instancia_ejecutoriada: "Segunda instancia ejecutoriada",
       };
       const DENUNCIA_LABELS: Record<string, string> = {
         SOLICITADA: "Solicitada", VALIDA: "Válida", INVALIDA: "Inválida", SIN_DENUNCIA: "Sin denuncia",
@@ -264,6 +274,16 @@ interface CasoEditState {
   fechaResolucionJpl: string;
   fechaMedidaPrecautoria: string;
   fechaDemanda: string;
+  fechaNotificacionDemanda: string;
+  fechaSentencia: string;
+  resultadoSentencia: ResultadoSentencia | "";
+  sentenciaApelada: boolean;
+  sentenciaEjecutoriada: boolean;
+  rolSegundaInstancia: string;
+  corteApelaciones: string;
+  fechaFalloCorte: string;
+  resultadoSegundaInstancia: ResultadoSentencia | "";
+  segundaInstanciaEjecutoriada: boolean;
 }
 
 const REGIONES_CHILE = [
@@ -512,8 +532,12 @@ function ClienteEditCard({
 const RESULTADO_JPL_OPTIONS: { value: ResultadoJPL; label: string }[] = [
   { value: "ACEPTA_SUSPENSION",  label: "Acepta suspensión — continúa vía judicial" },
   { value: "RECHAZA_SUSPENSION", label: "Rechaza suspensión — banco devuelve el monto" },
-  { value: "FALLO_FAVORABLE",    label: "Fallo favorable al cliente" },
-  { value: "FALLO_DESFAVORABLE", label: "Fallo desfavorable al cliente" },
+];
+
+const RESULTADO_SENTENCIA_OPTIONS: { value: ResultadoSentencia; label: string }[] = [
+  { value: "FAVORABLE_BANCO",   label: "Favorable al banco" },
+  { value: "FAVORABLE_CLIENTE", label: "Favorable al cliente" },
+  { value: "PARCIAL",           label: "Parcial" },
 ];
 
 function DatosJudicialesCard({
@@ -521,7 +545,7 @@ function DatosJudicialesCard({
   onChange,
   canEdit,
 }: {
-  current: Pick<CasoEditState, "numeroRol" | "tribunal" | "region" | "resultadoJpl" | "fechaResolucionJpl" | "fechaMedidaPrecautoria" | "fechaDemanda">;
+  current: Pick<CasoEditState, "numeroRol" | "tribunal" | "region" | "resultadoJpl" | "fechaResolucionJpl" | "fechaMedidaPrecautoria" | "fechaDemanda" | "fechaNotificacionDemanda">;
   onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
   canEdit: boolean;
 }) {
@@ -678,7 +702,7 @@ function DatosJudicialesCard({
 
           {/* Fecha demanda */}
           {canEdit ? (
-            <div className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
               <dt className="text-sm text-(--ink-600) shrink-0">Fecha demanda</dt>
               <dd className="ml-3 min-w-0 flex-1 flex justify-end">
                 <DatePicker
@@ -693,6 +717,283 @@ function DatosJudicialesCard({
           ) : current.fechaDemanda ? (
             <Field label="Fecha demanda" value={<span className="tabular-nums">{formatDate(current.fechaDemanda)}</span>} />
           ) : null}
+
+          {/* Fecha notificación demanda */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha notificación demanda</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <DatePicker
+                  value={current.fechaNotificacionDemanda || undefined}
+                  onChange={(v) => onChange("fechaNotificacionDemanda", v)}
+                  placeholder="Sin fecha"
+                  toDate={new Date()}
+                  className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+          ) : current.fechaNotificacionDemanda ? (
+            <Field label="Fecha notificación demanda" value={<span className="tabular-nums">{formatDate(current.fechaNotificacionDemanda)}</span>} />
+          ) : null}
+        </dl>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Sentencia card ────────────────────────────────────────────────────────────
+
+function SentenciaCard({
+  current,
+  onChange,
+  canEdit,
+}: {
+  current: Pick<CasoEditState, "fechaSentencia" | "resultadoSentencia" | "sentenciaApelada" | "sentenciaEjecutoriada">;
+  onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
+  canEdit: boolean;
+}) {
+  return (
+    <Card className="rounded-xl border-border shadow-none">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+          Sentencia
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-3">
+        <dl>
+          {/* Fecha sentencia */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha sentencia</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <DatePicker
+                  value={current.fechaSentencia || undefined}
+                  onChange={(v) => onChange("fechaSentencia", v)}
+                  placeholder="Sin fecha"
+                  toDate={new Date()}
+                  className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+          ) : current.fechaSentencia ? (
+            <Field label="Fecha sentencia" value={<span className="tabular-nums">{formatDate(current.fechaSentencia)}</span>} />
+          ) : null}
+
+          {/* Resultado sentencia */}
+          {canEdit ? (
+            <div className="py-2.5 border-b border-border space-y-1.5">
+              <dt className="text-sm text-(--ink-600)">Resultado sentencia</dt>
+              <dd>
+                <Select
+                  value={current.resultadoSentencia || "__none__"}
+                  onValueChange={(v) => onChange("resultadoSentencia", (v === "__none__" ? "" : v) as ResultadoSentencia | "")}
+                >
+                  <SelectTrigger className="h-8 w-full text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                    <span className="flex-1 text-left text-sm truncate">
+                      {current.resultadoSentencia
+                        ? RESULTADO_SENTENCIA_OPTIONS.find((o) => o.value === current.resultadoSentencia)?.label
+                        : <span className="text-muted-foreground text-sm">Sin resultado</span>
+                      }
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__" className="text-sm text-muted-foreground">Sin resultado</SelectItem>
+                    {RESULTADO_SENTENCIA_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value} className="text-sm">{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </dd>
+            </div>
+          ) : current.resultadoSentencia ? (
+            <Field
+              label="Resultado sentencia"
+              value={RESULTADO_SENTENCIA_OPTIONS.find((o) => o.value === current.resultadoSentencia)?.label ?? current.resultadoSentencia}
+            />
+          ) : null}
+
+          {/* Sentencia apelada */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Apelada</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <Select
+                  value={current.sentenciaApelada ? "true" : "false"}
+                  onValueChange={(v) => onChange("sentenciaApelada", v === "true")}
+                >
+                  <SelectTrigger className="h-8 w-full max-w-24 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                    <span className="flex-1 text-left text-sm">{current.sentenciaApelada ? "Sí" : "No"}</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="false" className="text-sm">No</SelectItem>
+                    <SelectItem value="true" className="text-sm">Sí</SelectItem>
+                  </SelectContent>
+                </Select>
+              </dd>
+            </div>
+          ) : (
+            <Field label="Apelada" value={current.sentenciaApelada ? "Sí" : "No"} />
+          )}
+
+          {/* Sentencia ejecutoriada — solo relevante si no fue apelada */}
+          {!current.sentenciaApelada && (
+            canEdit ? (
+              <div className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
+                <dt className="text-sm text-(--ink-600) shrink-0">Ejecutoriada</dt>
+                <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                  <Select
+                    value={current.sentenciaEjecutoriada ? "true" : "false"}
+                    onValueChange={(v) => onChange("sentenciaEjecutoriada", v === "true")}
+                  >
+                    <SelectTrigger className="h-8 w-full max-w-24 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                      <span className="flex-1 text-left text-sm">{current.sentenciaEjecutoriada ? "Sí" : "No"}</span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="false" className="text-sm">No</SelectItem>
+                      <SelectItem value="true" className="text-sm">Sí</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </dd>
+              </div>
+            ) : (
+              <Field label="Ejecutoriada" value={current.sentenciaEjecutoriada ? "Sí" : "No"} />
+            )
+          )}
+        </dl>
+      </CardContent>
+    </Card>
+  );
+}
+
+// ── Apelación card ────────────────────────────────────────────────────────────
+
+function ApelacionCard({
+  current,
+  onChange,
+  canEdit,
+}: {
+  current: Pick<CasoEditState, "rolSegundaInstancia" | "corteApelaciones" | "fechaFalloCorte" | "resultadoSegundaInstancia" | "segundaInstanciaEjecutoriada">;
+  onChange: <K extends keyof CasoEditState>(key: K, value: CasoEditState[K]) => void;
+  canEdit: boolean;
+}) {
+  return (
+    <Card className="rounded-xl border-border shadow-none">
+      <CardHeader className="pb-0">
+        <CardTitle className="text-xs font-semibold uppercase tracking-wide text-(--ink-600)">
+          Segunda instancia (apelación)
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="pt-3">
+        <dl>
+          {/* Rol segunda instancia */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Rol segunda instancia</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <input
+                  type="text"
+                  value={current.rolSegundaInstancia}
+                  onChange={(e) => onChange("rolSegundaInstancia", e.target.value)}
+                  placeholder="—"
+                  className={`${editInputClass} placeholder:font-normal placeholder:text-muted-foreground`}
+                />
+              </dd>
+            </div>
+          ) : (
+            <Field label="Rol segunda instancia" value={current.rolSegundaInstancia || "—"} />
+          )}
+
+          {/* Corte de apelaciones */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Corte de apelaciones</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <input
+                  type="text"
+                  value={current.corteApelaciones}
+                  onChange={(e) => onChange("corteApelaciones", e.target.value)}
+                  placeholder="—"
+                  className={`${editInputClass} placeholder:font-normal placeholder:text-muted-foreground`}
+                />
+              </dd>
+            </div>
+          ) : (
+            <Field label="Corte de apelaciones" value={current.corteApelaciones || "—"} />
+          )}
+
+          {/* Fecha fallo corte */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border">
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha fallo corte</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <DatePicker
+                  value={current.fechaFalloCorte || undefined}
+                  onChange={(v) => onChange("fechaFalloCorte", v)}
+                  placeholder="Sin fecha"
+                  toDate={new Date()}
+                  className="h-8 w-full max-w-44 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100)"
+                />
+              </dd>
+            </div>
+          ) : current.fechaFalloCorte ? (
+            <Field label="Fecha fallo corte" value={<span className="tabular-nums">{formatDate(current.fechaFalloCorte)}</span>} />
+          ) : null}
+
+          {/* Resultado segunda instancia */}
+          {canEdit ? (
+            <div className="py-2.5 border-b border-border space-y-1.5">
+              <dt className="text-sm text-(--ink-600)">Resultado segunda instancia</dt>
+              <dd>
+                <Select
+                  value={current.resultadoSegundaInstancia || "__none__"}
+                  onValueChange={(v) => onChange("resultadoSegundaInstancia", (v === "__none__" ? "" : v) as ResultadoSentencia | "")}
+                >
+                  <SelectTrigger className="h-8 w-full text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                    <span className="flex-1 text-left text-sm truncate">
+                      {current.resultadoSegundaInstancia
+                        ? RESULTADO_SENTENCIA_OPTIONS.find((o) => o.value === current.resultadoSegundaInstancia)?.label
+                        : <span className="text-muted-foreground text-sm">Sin resultado</span>
+                      }
+                    </span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="__none__" className="text-sm text-muted-foreground">Sin resultado</SelectItem>
+                    {RESULTADO_SENTENCIA_OPTIONS.map((o) => (
+                      <SelectItem key={o.value} value={o.value} className="text-sm">{o.label}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </dd>
+            </div>
+          ) : current.resultadoSegundaInstancia ? (
+            <Field
+              label="Resultado segunda instancia"
+              value={RESULTADO_SENTENCIA_OPTIONS.find((o) => o.value === current.resultadoSegundaInstancia)?.label ?? current.resultadoSegundaInstancia}
+            />
+          ) : null}
+
+          {/* Segunda instancia ejecutoriada */}
+          {canEdit ? (
+            <div className="flex items-center justify-between py-2.5 border-b border-border last:border-0">
+              <dt className="text-sm text-(--ink-600) shrink-0">Ejecutoriada</dt>
+              <dd className="ml-3 min-w-0 flex-1 flex justify-end">
+                <Select
+                  value={current.segundaInstanciaEjecutoriada ? "true" : "false"}
+                  onValueChange={(v) => onChange("segundaInstanciaEjecutoriada", v === "true")}
+                >
+                  <SelectTrigger className="h-8 w-full max-w-24 text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                    <span className="flex-1 text-left text-sm">{current.segundaInstanciaEjecutoriada ? "Sí" : "No"}</span>
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="false" className="text-sm">No</SelectItem>
+                    <SelectItem value="true" className="text-sm">Sí</SelectItem>
+                  </SelectContent>
+                </Select>
+              </dd>
+            </div>
+          ) : (
+            <Field label="Ejecutoriada" value={current.segundaInstanciaEjecutoriada ? "Sí" : "No"} />
+          )}
         </dl>
       </CardContent>
     </Card>
@@ -727,9 +1028,19 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
       fechaResolucionJpl: data?.caso.fechaResolucionJpl ?? "",
       fechaMedidaPrecautoria: data?.caso.fechaMedidaPrecautoria ?? "",
       fechaDemanda: data?.caso.fechaDemanda ?? "",
+      fechaNotificacionDemanda: data?.caso.fechaNotificacionDemanda ?? "",
+      fechaSentencia: data?.caso.fechaSentencia ?? "",
+      resultadoSentencia: data?.caso.resultadoSentencia ?? "",
+      sentenciaApelada: data?.caso.sentenciaApelada ?? false,
+      sentenciaEjecutoriada: data?.caso.sentenciaEjecutoriada ?? false,
+      rolSegundaInstancia: data?.caso.rolSegundaInstancia ?? "",
+      corteApelaciones: data?.caso.corteApelaciones ?? "",
+      fechaFalloCorte: data?.caso.fechaFalloCorte ?? "",
+      resultadoSegundaInstancia: data?.caso.resultadoSegundaInstancia ?? "",
+      segundaInstanciaEjecutoriada: data?.caso.segundaInstanciaEjecutoriada ?? false,
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    [data?.caso.abogadoId, data?.caso.numeroOt, data?.caso.estadoDenuncia, data?.caso.fechaDenuncia, data?.caso.fechaDj, data?.caso.numeroRol, data?.caso.tribunal, data?.caso.region, data?.caso.resultadoJpl, data?.caso.fechaResolucionJpl, data?.caso.fechaMedidaPrecautoria, data?.caso.fechaDemanda]
+    [data?.caso.abogadoId, data?.caso.numeroOt, data?.caso.estadoDenuncia, data?.caso.fechaDenuncia, data?.caso.fechaDj, data?.caso.numeroRol, data?.caso.tribunal, data?.caso.region, data?.caso.resultadoJpl, data?.caso.fechaResolucionJpl, data?.caso.fechaMedidaPrecautoria, data?.caso.fechaDemanda, data?.caso.fechaNotificacionDemanda, data?.caso.fechaSentencia, data?.caso.resultadoSentencia, data?.caso.sentenciaApelada, data?.caso.sentenciaEjecutoriada, data?.caso.rolSegundaInstancia, data?.caso.corteApelaciones, data?.caso.fechaFalloCorte, data?.caso.resultadoSegundaInstancia, data?.caso.segundaInstanciaEjecutoriada]
   );
 
   const clienteOriginal = useMemo<ClienteEditState>(
@@ -767,7 +1078,17 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
     casoEdit.resultadoJpl !== casoOriginal.resultadoJpl ||
     casoEdit.fechaResolucionJpl !== casoOriginal.fechaResolucionJpl ||
     casoEdit.fechaMedidaPrecautoria !== casoOriginal.fechaMedidaPrecautoria ||
-    casoEdit.fechaDemanda !== casoOriginal.fechaDemanda;
+    casoEdit.fechaDemanda !== casoOriginal.fechaDemanda ||
+    casoEdit.fechaNotificacionDemanda !== casoOriginal.fechaNotificacionDemanda ||
+    casoEdit.fechaSentencia !== casoOriginal.fechaSentencia ||
+    casoEdit.resultadoSentencia !== casoOriginal.resultadoSentencia ||
+    casoEdit.sentenciaApelada !== casoOriginal.sentenciaApelada ||
+    casoEdit.sentenciaEjecutoriada !== casoOriginal.sentenciaEjecutoriada ||
+    casoEdit.rolSegundaInstancia !== casoOriginal.rolSegundaInstancia ||
+    casoEdit.corteApelaciones !== casoOriginal.corteApelaciones ||
+    casoEdit.fechaFalloCorte !== casoOriginal.fechaFalloCorte ||
+    casoEdit.resultadoSegundaInstancia !== casoOriginal.resultadoSegundaInstancia ||
+    casoEdit.segundaInstanciaEjecutoriada !== casoOriginal.segundaInstanciaEjecutoriada;
 
   const clienteIsDirty =
     clienteEdit.nombre !== clienteOriginal.nombre ||
@@ -803,6 +1124,26 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
         patch.fechaMedidaPrecautoria = casoEdit.fechaMedidaPrecautoria; // "" signals clear
       if (casoEdit.fechaDemanda !== casoOriginal.fechaDemanda)
         patch.fechaDemanda = casoEdit.fechaDemanda; // "" signals clear
+      if (casoEdit.fechaNotificacionDemanda !== casoOriginal.fechaNotificacionDemanda)
+        patch.fechaNotificacionDemanda = casoEdit.fechaNotificacionDemanda; // "" signals clear
+      if (casoEdit.fechaSentencia !== casoOriginal.fechaSentencia)
+        patch.fechaSentencia = casoEdit.fechaSentencia; // "" signals clear
+      if (casoEdit.resultadoSentencia !== casoOriginal.resultadoSentencia)
+        patch.resultadoSentencia = casoEdit.resultadoSentencia; // "" signals clear
+      if (casoEdit.sentenciaApelada !== casoOriginal.sentenciaApelada)
+        patch.sentenciaApelada = casoEdit.sentenciaApelada;
+      if (casoEdit.sentenciaEjecutoriada !== casoOriginal.sentenciaEjecutoriada)
+        patch.sentenciaEjecutoriada = casoEdit.sentenciaEjecutoriada;
+      if (casoEdit.rolSegundaInstancia !== casoOriginal.rolSegundaInstancia)
+        patch.rolSegundaInstancia = casoEdit.rolSegundaInstancia; // "" signals clear
+      if (casoEdit.corteApelaciones !== casoOriginal.corteApelaciones)
+        patch.corteApelaciones = casoEdit.corteApelaciones; // "" signals clear
+      if (casoEdit.fechaFalloCorte !== casoOriginal.fechaFalloCorte)
+        patch.fechaFalloCorte = casoEdit.fechaFalloCorte; // "" signals clear
+      if (casoEdit.resultadoSegundaInstancia !== casoOriginal.resultadoSegundaInstancia)
+        patch.resultadoSegundaInstancia = casoEdit.resultadoSegundaInstancia; // "" signals clear
+      if (casoEdit.segundaInstanciaEjecutoriada !== casoOriginal.segundaInstanciaEjecutoriada)
+        patch.segundaInstanciaEjecutoriada = casoEdit.segundaInstanciaEjecutoriada;
       casoMutation.mutate(patch);
     }
     if (clienteIsDirty) {
@@ -934,6 +1275,14 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
       {/* Datos judiciales */}
       <DatosJudicialesCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} />
+
+      {/* Sentencia */}
+      <SentenciaCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} />
+
+      {/* Apelación — solo cuando la sentencia fue apelada */}
+      {casoEdit.sentenciaApelada && (
+        <ApelacionCard current={casoEdit} onChange={onCasoChange} canEdit={canEditCaseFields} />
+      )}
 
       {/* Flujo del caso */}
       <CasoFlowView casoId={id} />

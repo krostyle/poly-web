@@ -39,8 +39,6 @@ const TIPO_PLAZO_LABELS: Record<TipoPlazo, string> = {
 const RESULTADO_JPL_LABELS: Record<ResultadoJPL, string> = {
   ACEPTA_SUSPENSION:  "JPL acepta suspensión — proceso continúa vía judicial",
   RECHAZA_SUSPENSION: "JPL rechaza suspensión — banco debe devolver el monto",
-  FALLO_FAVORABLE:    "Fallo favorable al cliente",
-  FALLO_DESFAVORABLE: "Fallo desfavorable al cliente",
 };
 
 interface FlowNodeDef {

@@ -43,9 +43,12 @@ export type TipoPlazo =
 
 export type ResultadoJPL =
   | "ACEPTA_SUSPENSION"
-  | "RECHAZA_SUSPENSION"
-  | "FALLO_FAVORABLE"
-  | "FALLO_DESFAVORABLE";
+  | "RECHAZA_SUSPENSION";
+
+export type ResultadoSentencia =
+  | "FAVORABLE_BANCO"
+  | "FAVORABLE_CLIENTE"
+  | "PARCIAL";
 
 export interface Caso {
   id: string;
@@ -66,6 +69,16 @@ export interface Caso {
   fechaResolucionJpl?: string;
   fechaMedidaPrecautoria?: string;
   fechaDemanda?: string;
+  fechaNotificacionDemanda?: string;
+  fechaSentencia?: string;
+  resultadoSentencia?: ResultadoSentencia;
+  sentenciaApelada: boolean;
+  sentenciaEjecutoriada: boolean;
+  rolSegundaInstancia?: string;
+  corteApelaciones?: string;
+  fechaFalloCorte?: string;
+  resultadoSegundaInstancia?: ResultadoSentencia;
+  segundaInstanciaEjecutoriada: boolean;
   createdAt: string;
   updatedAt: string;
 }

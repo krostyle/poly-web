@@ -20,6 +20,16 @@ export function useActualizarCaso(casoId: string) {
       fechaResolucionJpl?: string;
       fechaMedidaPrecautoria?: string;
       fechaDemanda?: string;
+      fechaNotificacionDemanda?: string;
+      fechaSentencia?: string;
+      resultadoSentencia?: import("@/lib/api/types").ResultadoSentencia | "";
+      sentenciaApelada?: boolean;
+      sentenciaEjecutoriada?: boolean;
+      rolSegundaInstancia?: string;
+      corteApelaciones?: string;
+      fechaFalloCorte?: string;
+      resultadoSegundaInstancia?: import("@/lib/api/types").ResultadoSentencia | "";
+      segundaInstanciaEjecutoriada?: boolean;
     }) => {
       const token = await getToken();
       return actualizarCaso(casoId, patch, token ?? "");
