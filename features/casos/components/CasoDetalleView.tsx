@@ -857,6 +857,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
               casoId={caso.id}
               estadoActual={caso.estado}
               estadoDenuncia={caso.estadoDenuncia}
+              fechaDenuncia={caso.fechaDenuncia}
             />
           )}
           {canDelete && (

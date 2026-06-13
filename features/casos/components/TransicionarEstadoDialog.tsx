@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { AlertTriangle, Loader2, RotateCcw } from "lucide-react";
+import { AlertCircle, AlertTriangle, Loader2, RotateCcw } from "lucide-react";
 import {
   Dialog,
   DialogContent,
@@ -73,15 +73,26 @@ const MOTIVOS: { value: MotivoTermino; label: string }[] = [
   { value: "ABANDONO_PROCEDIMIENTO",         label: "Abandono de procedimiento" },
 ];
 
+// ── Prerequisitos bloqueantes por transición ──────────────────────────────────
+function getPrejudicialBlockReason(
+  estadoDenuncia: EstadoDenuncia,
+  fechaDenuncia?: string | null,
+): string | null {
+  if (!fechaDenuncia) return "Registra la fecha de denuncia del banco antes de solicitar la medida precautoria.";
+  if (estadoDenuncia === "PENDIENTE") return "La denuncia del banco debe estar resuelta (acogida o rechazada) antes de solicitar la medida precautoria.";
+  return null;
+}
+
 // ── Props ────────────────────────────────────────────────────────────────────
 interface Props {
   casoId: string;
   estadoActual: Estado;
   estadoDenuncia: EstadoDenuncia;
+  fechaDenuncia?: string | null;
 }
 
 // ── Componente ───────────────────────────────────────────────────────────────
-export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia }: Props) {
+export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia, fechaDenuncia }: Props) {
   const [open, setOpen] = useState(false);
   const [selectedEstado, setSelectedEstado] = useState<Estado | null>(null);
   const [motivoTermino, setMotivoTermino] = useState<MotivoTermino | "">("");
@@ -89,18 +100,27 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia 
   const { mutate, isPending, error } = useTransicionarEstado(casoId);
 
   const siguientesBase = TRANSICIONES[estadoActual] ?? [];
-  // Apply denuncia guard: from PREJUDICIAL the bank response determines the path.
-  const siguientes = (estadoActual === "PREJUDICIAL" && !modoCorreccion)
-    ? siguientesBase.filter((e) => {
-        if (e === "PAGO_NORMATIVO") return estadoDenuncia === "RECHAZADA";
-        if (e === "JUDICIAL")       return estadoDenuncia === "ACOGIDA";
-        return true;
-      })
-    : siguientesBase;
 
-  const opciones: Estado[] = modoCorreccion
-    ? (Object.keys(TRANSICIONES) as Estado[]).filter((e) => e !== estadoActual)
-    : siguientes;
+  // Build options with optional block reason (shown disabled + explanation)
+  type Opcion = { estado: Estado; bloqueado?: string };
+  const opciones: Opcion[] = modoCorreccion
+    ? (Object.keys(TRANSICIONES) as Estado[])
+        .filter((e) => e !== estadoActual)
+        .map((e) => ({ estado: e }))
+    : siguientesBase.map((e) => {
+        // INGRESO → PREJUDICIAL: requires fecha_denuncia set and denuncia resolved
+        if (estadoActual === "INGRESO" && e === "PREJUDICIAL") {
+          const reason = getPrejudicialBlockReason(estadoDenuncia, fechaDenuncia);
+          if (reason) return { estado: e, bloqueado: reason };
+        }
+        // PREJUDICIAL → PAGO_NORMATIVO: only if bank rejected denuncia
+        if (estadoActual === "PREJUDICIAL" && e === "PAGO_NORMATIVO" && estadoDenuncia !== "RECHAZADA")
+          return { estado: e, bloqueado: "El banco debe haber rechazado la denuncia para tomar esta vía." };
+        // PREJUDICIAL → JUDICIAL: only if bank accepted denuncia
+        if (estadoActual === "PREJUDICIAL" && e === "JUDICIAL" && estadoDenuncia !== "ACOGIDA")
+          return { estado: e, bloqueado: "El banco debe haber acogido la denuncia para continuar directamente a Judicial." };
+        return { estado: e };
+      });
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -132,8 +152,7 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia 
     setOpen(val);
   }
 
-  // When state machine has no forward transitions, only show if mode corrección
-  const hasSiguientes = siguientes.length > 0;
+  const hasSiguientes = siguientesBase.length > 0;
 
   return (
     <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -199,12 +218,13 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia 
                     No hay transiciones disponibles.
                   </p>
                 ) : (
-                  opciones.map((est) => (
+                  opciones.map(({ estado: est, bloqueado }) => (
                     <EstadoButton
                       key={est}
                       estado={est}
                       selected={selectedEstado === est}
-                      onSelect={() => { setSelectedEstado(est); setMotivoTermino(""); }}
+                      bloqueado={bloqueado}
+                      onSelect={() => { if (!bloqueado) { setSelectedEstado(est); setMotivoTermino(""); } }}
                     />
                   ))
                 )}
@@ -296,13 +316,28 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, estadoDenuncia 
 function EstadoButton({
   estado,
   selected,
+  bloqueado,
   onSelect,
 }: {
   estado: Estado;
   selected: boolean;
+  bloqueado?: string;
   onSelect: () => void;
 }) {
   const desc = ESTADO_DESC[estado];
+
+  if (bloqueado) {
+    return (
+      <div className="w-full rounded-lg border border-border/50 bg-(--slate-100)/60 px-3.5 py-2.5 opacity-70 cursor-not-allowed">
+        <div className="flex items-center gap-1.5">
+          <AlertCircle className="size-3.5 shrink-0 text-(--ink-600)" />
+          <p className="text-sm font-medium text-(--ink-600)">{ESTADO_LABELS[estado]}</p>
+        </div>
+        <p className="mt-1 text-xs text-(--ink-600)">{bloqueado}</p>
+      </div>
+    );
+  }
+
   return (
     <button
       type="button"
