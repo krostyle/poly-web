@@ -22,6 +22,7 @@ export function useTransicionarEstado(casoId: string) {
       qc.invalidateQueries({ queryKey: ["casos", casoId] });
       qc.invalidateQueries({ queryKey: ["casos", casoId, "historial"] });
       qc.invalidateQueries({ queryKey: ["casos"] });
+      qc.invalidateQueries({ queryKey: ["plazos", casoId] });
     },
   });
 }
