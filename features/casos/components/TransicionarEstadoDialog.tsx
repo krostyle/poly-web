@@ -39,7 +39,7 @@ const TRANSICIONES: Record<Estado, Estado[]> = {
 const ESTADO_DESC: Partial<Record<Estado, string>> = {
   PREJUDICIAL:       "Medida precautoria presentada ante el JPL — obligatoria al ingresar el caso",
   PAGO_NORMATIVO:    "JPL rechaza la suspensión — banco debe devolver el monto al cliente",
-  JUDICIAL:          "JPL acepta la suspensión — banco debe demandar formalmente",
+  JUDICIAL:          "El banco presenta demanda formal ante el tribunal",
   AUDIENCIA:         "Audiencia fijada en tribunal",
   SENTENCIA:         "Tribunal dicta sentencia de primera instancia",
   APELACION:         "Recurso de apelación interpuesto",
@@ -101,6 +101,9 @@ export function TransicionarEstadoDialog({ casoId, estadoActual, resultadoJpl }:
         // en el mismo acto — no implica resolución JPL
         if (estadoActual === "INGRESO" && e === "JUDICIAL")
           return { estado: e, desc: "El tribunal exige presentar la demanda y la medida precautoria en el mismo acto" };
+        // Desde pago normativo el banco puede igualmente demandar para recuperar lo restituido
+        if (estadoActual === "PAGO_NORMATIVO" && e === "JUDICIAL")
+          return { estado: e, desc: "El banco opta por demandar formalmente para recuperar el monto ya restituido" };
         if (estadoActual === "PREJUDICIAL" && e === "PAGO_NORMATIVO") {
           if (!resultadoJpl)
             return { estado: e, bloqueado: "Se requiere registrar la resolución del JPL antes de avanzar." };
