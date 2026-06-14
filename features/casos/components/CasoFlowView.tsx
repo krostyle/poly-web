@@ -219,8 +219,12 @@ function BranchIndicator({ resultadoJpl }: { resultadoJpl?: ResultadoJPL }) {
           </div>
         </div>
         {resultadoJpl && (
-          <p className="mt-2 text-xs font-medium text-(--navy-700)">
-            ✓ {RESULTADO_JPL_LABELS[resultadoJpl]}
+          <p className={`mt-2 text-xs font-medium ${
+            resultadoJpl === "ACEPTA_SUSPENSION"
+              ? "text-(--navy-700)"
+              : "text-amber-700"
+          }`}>
+            {resultadoJpl === "ACEPTA_SUSPENSION" ? "✓" : "→"} {RESULTADO_JPL_LABELS[resultadoJpl]}
           </p>
         )}
       </div>
