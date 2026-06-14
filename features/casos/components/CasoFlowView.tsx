@@ -203,7 +203,7 @@ function BranchIndicator({ resultadoJpl }: { resultadoJpl?: ResultadoJPL }) {
           )}>
             <p className="text-xs font-semibold text-(--navy-900)">JPL acepta la suspensión</p>
             <p className="mt-0.5 text-[11px] text-(--ink-600)">El banco mantiene el monto suspendido</p>
-            <p className="mt-0.5 text-[11px] text-(--ink-600)">→ Debe demandar formalmente en 10 días</p>
+            <p className="mt-0.5 text-[11px] text-(--ink-600)">→ Debe demandar formalmente en 10 días hábiles</p>
           </div>
           <div className={cn(
             "rounded-lg border p-2.5 transition-colors",
