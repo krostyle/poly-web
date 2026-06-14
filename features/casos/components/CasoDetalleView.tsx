@@ -229,20 +229,23 @@ function AuditEntryDescription({ entry }: { entry: HistorialEntry }) {
 
 // ── Unsaved changes bar ────────────────────────────────────────────────────────
 
-function UnsavedChangesBar({ onSave, onDiscard, isSaving }: {
+function UnsavedChangesBar({ onSave, onDiscard, isSaving, hasError }: {
   onSave: () => void;
   onDiscard: () => void;
   isSaving: boolean;
+  hasError?: boolean;
 }) {
   return (
     <div className="fixed inset-x-0 bottom-0 z-50 flex items-center justify-between gap-4 border-t border-border bg-(--paper)/95 px-6 py-3 shadow-xl backdrop-blur-sm animate-in slide-in-from-bottom-2 duration-200">
       <div className="flex items-center gap-2">
-        <span className="size-2 rounded-full bg-amber-400 shrink-0" />
-        <span className="text-sm text-(--ink-600)">Tienes cambios sin guardar</span>
+        <span className={`size-2 rounded-full shrink-0 ${hasError ? "bg-destructive" : "bg-amber-400"}`} />
+        <span className="text-sm text-(--ink-600)">
+          {hasError ? "Corrige los errores antes de guardar" : "Tienes cambios sin guardar"}
+        </span>
       </div>
       <div className="flex items-center gap-2">
         <Button variant="outline" size="sm" onClick={onDiscard} disabled={isSaving}>Descartar</Button>
-        <Button size="sm" onClick={onSave} disabled={isSaving}>
+        <Button size="sm" onClick={onSave} disabled={isSaving || hasError}>
           {isSaving && <Loader2 className="size-3.5 animate-spin" />}
           {isSaving ? "Guardando…" : "Guardar cambios"}
         </Button>
@@ -722,7 +725,7 @@ function DatosMPCard({
           {/* Fecha resolución JPL */}
           {canEdit ? (
             <div className="flex items-center justify-between py-2.5 border-b border-border">
-              <dt className="text-sm text-(--ink-600) shrink-0">Fecha resolución JPL</dt>
+              <dt className="text-sm text-(--ink-600) shrink-0">Fecha resolución</dt>
               <dd className="ml-3 min-w-0 flex-1 flex justify-end">
                 <DatePicker
                   value={current.fechaResolucionJpl || undefined}
@@ -735,38 +738,48 @@ function DatosMPCard({
               </dd>
             </div>
           ) : current.fechaResolucionJpl ? (
-            <Field label="Fecha resolución JPL" value={<span className="tabular-nums">{formatDate(current.fechaResolucionJpl)}</span>} />
+            <Field label="Fecha resolución" value={<span className="tabular-nums">{formatDate(current.fechaResolucionJpl)}</span>} />
           ) : null}
 
-          {/* Resultado JPL */}
-          {canEdit ? (
-            <div className="py-2.5 border-b border-border space-y-1.5">
-              <dt className="text-sm text-(--ink-600)">Resultado JPL</dt>
-              <dd>
-                <Select
-                  value={current.resultadoJpl || "__none__"}
-                  onValueChange={(v) => onChange("resultadoJpl", (v === "__none__" ? "" : v) as ResultadoJPL | "")}
-                >
-                  <SelectTrigger className="h-8 w-full text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
-                    <span className="flex-1 text-left text-sm truncate">
-                      {current.resultadoJpl
-                        ? RESULTADO_JPL_OPTIONS.find((o) => o.value === current.resultadoJpl)?.label
-                        : <span className="text-muted-foreground text-sm">Sin resultado</span>
-                      }
-                    </span>
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectItem value="__none__" className="text-sm text-muted-foreground">Sin resultado</SelectItem>
-                    {RESULTADO_JPL_OPTIONS.map((o) => (
-                      <SelectItem key={o.value} value={o.value} className="text-sm">{o.label}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </dd>
-            </div>
-          ) : current.resultadoJpl ? (
+          {/* Resolución JPL */}
+          {canEdit ? (() => {
+            const warn = (current.resultadoJpl && !current.fechaResolucionJpl)
+              ? "Ingresa también la fecha de resolución"
+              : (!current.resultadoJpl && current.fechaResolucionJpl)
+              ? "Selecciona también la resolución"
+              : null;
+            return (
+              <div className="py-2.5 border-b border-border space-y-1.5">
+                <dt className="text-sm text-(--ink-600)">Resolución JPL</dt>
+                <dd>
+                  <Select
+                    value={current.resultadoJpl || "__none__"}
+                    onValueChange={(v) => onChange("resultadoJpl", (v === "__none__" ? "" : v) as ResultadoJPL | "")}
+                  >
+                    <SelectTrigger className="h-8 w-full text-sm border-border/60 bg-(--slate-100)/60 hover:border-input hover:bg-(--slate-100) px-2">
+                      <span className="flex-1 text-left text-sm truncate">
+                        {current.resultadoJpl
+                          ? RESULTADO_JPL_OPTIONS.find((o) => o.value === current.resultadoJpl)?.label
+                          : <span className="text-muted-foreground text-sm">Sin resolución</span>
+                        }
+                      </span>
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="__none__" className="text-sm text-muted-foreground">Sin resolución</SelectItem>
+                      {RESULTADO_JPL_OPTIONS.map((o) => (
+                        <SelectItem key={o.value} value={o.value} className="text-sm">{o.label}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </dd>
+                {warn && (
+                  <p className="text-xs text-destructive">{warn}</p>
+                )}
+              </div>
+            );
+          })() : current.resultadoJpl ? (
             <Field
-              label="Resultado JPL"
+              label="Resolución JPL"
               value={RESULTADO_JPL_OPTIONS.find((o) => o.value === current.resultadoJpl)?.label ?? current.resultadoJpl}
             />
           ) : null}
@@ -1366,6 +1379,10 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
     clienteEdit.contacto !== clienteOriginal.contacto;
   const isDirty = casoIsDirty || clienteIsDirty;
   const isSaving = casoMutation.isPending || clienteMutation.isPending;
+  const jplPairError = !!(
+    (casoEdit.resultadoJpl && !casoEdit.fechaResolucionJpl) ||
+    (!casoEdit.resultadoJpl && casoEdit.fechaResolucionJpl)
+  );
 
   // Progressive date constraints for calendar blocking
   const minFechaMP        = parseDate(casoEdit.fechaDj);
@@ -1651,7 +1668,7 @@ export function CasoDetalleView({ id }: CasoDetalleViewProps) {
 
       {/* Save bar */}
       {isDirty && (
-        <UnsavedChangesBar onSave={handleSaveAll} onDiscard={handleDiscardAll} isSaving={isSaving} />
+        <UnsavedChangesBar onSave={handleSaveAll} onDiscard={handleDiscardAll} isSaving={isSaving} hasError={jplPairError} />
       )}
     </div>
   );
