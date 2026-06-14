@@ -62,7 +62,7 @@ const FLOW_NODES: FlowNodeDef[] = [
   {
     state: "PREJUDICIAL",
     label: "Prejudicial",
-    description: "Medida precautoria presentada ante el JPL — obligatoria al ingresar el caso",
+    description: "Medida precautoria presentada ante el JPL",
     Icon: Scale,
     plazoTypes: ["PRECAUTELAR", "RESOLUCION_JPL"],
     onlyIfVisited: true,

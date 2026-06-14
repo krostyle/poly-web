@@ -37,7 +37,7 @@ const TRANSICIONES: Record<Estado, Estado[]> = {
 
 // ── Descripciones de cada estado (ayuda contextual en el dialog) ─────────────
 const ESTADO_DESC: Partial<Record<Estado, string>> = {
-  PREJUDICIAL:       "Medida precautoria presentada ante el JPL — obligatoria al ingresar el caso",
+  PREJUDICIAL:       "Medida precautoria presentada ante el JPL",
   PAGO_NORMATIVO:    "JPL rechaza la suspensión — banco debe devolver el monto al cliente",
   JUDICIAL:          "El banco presenta demanda formal ante el tribunal",
   AUDIENCIA:         "Audiencia fijada en tribunal",
